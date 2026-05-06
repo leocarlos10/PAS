@@ -1,0 +1,51 @@
+import { useState } from "react";
+import { NavLink } from "react-router-dom";
+
+export const ProfileMenu = () => {
+    const [open, setOpen] = useState<boolean>(false);
+
+    return (
+        <div className="relative">
+            {/* Botón trigger */}
+            <button 
+                onClick={() => setOpen(!open)}
+                className=" 
+                flex items-center 
+                gap-3
+                rounded-lg 
+                bg-sidebar-accent/60 
+                p-2 
+                group-data-[collapsible=icon]:justify-center 
+                hover:bg-sidebar-accent/80 
+                transition-colors
+                cursor-pointer
+                "
+            >
+                <div className="flex size-9 items-center justify-center rounded-full bg-sidebar">
+                    <span className="material-symbols-outlined">person</span>
+                </div>
+                <div className="flex min-w-0 flex-1 flex-col group-data-[collapsible=icon]:hidden">
+                    <span className="truncate text-sm font-medium">Admin Seguridad</span>
+                    <span className="truncate text-xs text-sidebar-foreground/60">
+                        admin@sistema.com
+                    </span>
+                </div>
+            </button>
+
+            {/* Menú dropdown */}
+            {open && (
+                <div className="absolute bottom-full left-0 right-0 mb-2 bg-sidebar border border-sidebar-border rounded-lg shadow-lg z-50 overflow-hidden">
+                    <a href="#configuracion" className="flex items-center gap-3 px-4 py-2.5 text-sm text-sidebar-foreground hover:bg-emerald-500/15 hover:text-emerald-300 transition-colors">
+                        <span className="material-symbols-outlined text-base">settings</span>
+                        <span>Configuración</span>
+                    </a>
+                    <div className="border-t border-sidebar-border/50"></div>
+                    <NavLink to="/" className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition-colors">
+                        <span className="material-symbols-outlined text-base">logout</span>
+                        <span>Cerrar sesión</span>
+                    </NavLink>
+                </div>
+            )}
+        </div>
+    )
+}

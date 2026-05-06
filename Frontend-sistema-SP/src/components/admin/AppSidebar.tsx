@@ -15,9 +15,18 @@ import {
 } from "@/components/ui/sidebar"
 import { NavLink, useLocation } from "react-router-dom"
 import logo from "@/assets/logo_sistema_seguridad_perimetral_v4.svg"
+import { ProfileMenu } from "../ui"
 
 const itemStyles =
-  "text-sidebar-foreground/70 hover:bg-emerald-500/10 hover:text-emerald-300 data-active:bg-emerald-500/15 data-active:text-emerald-300 data-active:ring-1 data-active:ring-emerald-500/40"
+  `text-sidebar-foreground/70 
+  hover:bg-emerald-500/10 
+  hover:text-emerald-300 
+  data-active:bg-emerald-500/15 
+  data-active:text-emerald-300 
+  data-active:ring-1 
+  data-active:ring-emerald-500/40
+  group-data-[collapsible=icon]:justify-center
+  `
 
 export const AppSidebar = () => {
   const { pathname } = useLocation()
@@ -35,7 +44,7 @@ export const AppSidebar = () => {
               className="h-20 w-20 object-cover rounded-full"
             />
           <div className="flex flex-col leading-tight group-data-[collapsible=icon]:hidden">
-            <span className="text-sm font-semibold">Guardia</span>
+            <span className="text-sm font-semibold">Seguridad</span>
             <span className="text-sm font-semibold">Perimetral</span>
           </div>
         </div>
@@ -53,7 +62,7 @@ export const AppSidebar = () => {
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-2">
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
@@ -74,7 +83,7 @@ export const AppSidebar = () => {
                   tooltip="Historial"
                   className={itemStyles}
                 >
-                  <NavLink to="/admin/historial">
+                  <NavLink to="/admin/historial" >
                     <span className="material-symbols-outlined">list</span>
                     <span className="group-data-[collapsible=icon]:hidden">Historial</span>
                   </NavLink>
@@ -99,17 +108,7 @@ export const AppSidebar = () => {
       </SidebarContent>
       <SidebarSeparator />
       <SidebarFooter className="gap-3 p-4 group-data-[collapsible=icon]:p-2">
-        <div className="flex items-center gap-3 rounded-lg bg-sidebar-accent/60 p-2 group-data-[collapsible=icon]:justify-center">
-          <div className="flex size-9 items-center justify-center rounded-full bg-sidebar">
-            <span className="material-symbols-outlined">person</span>
-          </div>
-          <div className="flex min-w-0 flex-1 flex-col group-data-[collapsible=icon]:hidden">
-            <span className="truncate text-sm font-medium">Admin Seguridad</span>
-            <span className="truncate text-xs text-sidebar-foreground/60">
-              admin@sistema.com
-            </span>
-          </div>
-        </div>
+        <ProfileMenu />
         <SidebarGroup className="p-0">
           <SidebarGroupContent></SidebarGroupContent>
         </SidebarGroup>
