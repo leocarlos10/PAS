@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Perimeter Dashboard - Iniciar sesión</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface": "#e0e3e3",
+                        "surface-container-low": "#181c1d",
+                        "secondary-fixed": "#e0e2f0",
+                        "outline-variant": "#3f4949",
+                        "tertiary-container": "#8b4f2a",
+                        "inverse-surface": "#e0e3e3",
+                        "surface-tint": "#85d3da",
+                        "surface": "#101414",
+                        "surface-container-lowest": "#0b0f0f",
+                        "on-tertiary-container": "#ffceb5",
+                        "on-background": "#e0e3e3",
+                        "on-secondary-container": "#b2b4c2",
+                        "error-container": "#93000a",
+                        "on-tertiary-fixed-variant": "#6e3815",
+                        "secondary": "#c4c6d3",
+                        "primary-fixed-dim": "#85d3da",
+                        "on-error": "#690005",
+                        "outline": "#889393",
+                        "on-tertiary-fixed": "#331200",
+                        "inverse-on-surface": "#2d3131",
+                        "surface-container": "#1c2021",
+                        "tertiary-fixed-dim": "#ffb68d",
+                        "secondary-fixed-dim": "#c4c6d3",
+                        "surface-dim": "#101414",
+                        "primary-container": "#01696f",
+                        "primary-fixed": "#a1f0f6",
+                        "on-primary-container": "#97e6ec",
+                        "tertiary": "#ffb68d",
+                        "on-secondary": "#2d303b",
+                        "surface-variant": "#313536",
+                        "on-surface-variant": "#bec8c9",
+                        "on-tertiary": "#522302",
+                        "on-error-container": "#ffdad6",
+                        "secondary-container": "#444652",
+                        "error": "#ffb4ab",
+                        "on-primary-fixed": "#002022",
+                        "on-primary-fixed-variant": "#004f54",
+                        "surface-container-highest": "#313536",
+                        "surface-bright": "#363a3a",
+                        "background": "#101414",
+                        "on-secondary-fixed-variant": "#444652",
+                        "on-primary": "#00363a",
+                        "tertiary-fixed": "#ffdbc9",
+                        "surface-container-high": "#272b2b",
+                        "on-secondary-fixed": "#181b25",
+                        "primary": "#85d3da",
+                        "inverse-primary": "#01696f"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "xs": "8px",
+                        "md": "16px",
+                        "gutter": "16px",
+                        "xl": "32px",
+                        "container-margin": "24px",
+                        "sm": "12px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "h2": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "h1": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "h3": ["Inter"],
+                        "mono-data": ["monospace"]
+                    },
+                    "fontSize": {
+                        "h2": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400" }],
+                        "h1": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-caps": ["12px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "body-lg": ["16px", { "lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400" }],
+                        "h3": ["18px", { "lineHeight": "1.4", "letterSpacing": "0", "fontWeight": "600" }],
+                        "mono-data": ["14px", { "lineHeight": "1", "letterSpacing": "0", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: linear-gradient(145deg, rgba(28, 32, 33, 0.9) 0%, rgba(24, 28, 29, 0.95) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(136, 147, 147, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background h-screen flex items-center justify-center font-body-lg">
+<div class="w-full max-w-md px-container-margin">
+<div class="glass-panel rounded-xl p-lg relative overflow-hidden">
+<!-- Decorative Top Accent -->
+<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-50"></div>
+<!-- Header -->
+<div class="text-center mb-xl">
+<div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-container/20 mb-md">
+<span class="material-symbols-outlined text-primary text-4xl" data-icon="security" data-weight="fill" style="font-variation-settings: 'FILL' 1;">security</span>
+</div>
+<h1 class="font-h2 text-h2 text-on-surface mb-xs">Sistema de Seguridad Perimetral</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Acceso restringido a personal autorizado</p>
+</div>
+<!-- Form -->
+<form class="space-y-md">
+<!-- Username -->
+<div>
+<label class="sr-only" for="username">Usuario</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-sm flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-on-surface-variant text-xl" data-icon="person">person</span>
+</div>
+<input autofocus="" class="w-full bg-surface-container-low border border-outline-variant rounded focus:border-primary focus:ring-1 focus:ring-primary text-on-surface py-sm pl-10 pr-sm placeholder-on-surface-variant font-body-sm text-body-sm transition-colors duration-200 outline-none" id="username" name="username" placeholder="Usuario" required="" type="text"/>
+</div>
+</div>
+<!-- Password -->
+<div>
+<label class="sr-only" for="password">Contraseña</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-sm flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-on-surface-variant text-xl" data-icon="lock">lock</span>
+</div>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded focus:border-primary focus:ring-1 focus:ring-primary text-on-surface py-sm pl-10 pr-10 placeholder-on-surface-variant font-body-sm text-body-sm transition-colors duration-200 outline-none" id="password" name="password" placeholder="Contraseña" required="" type="password"/>
+<button class="absolute inset-y-0 right-0 pr-sm flex items-center text-on-surface-variant hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-xl" data-icon="visibility">visibility</span>
+</button>
+</div>
+</div>
+<!-- Submit Action -->
+<div class="pt-sm">
+<button class="w-full bg-primary-container text-on-primary-container rounded py-sm px-md font-body-lg text-body-lg font-medium hover:bg-inverse-primary transition-colors duration-200 flex items-center justify-center relative overflow-hidden group" type="submit">
+<span class="relative z-10 flex items-center gap-xs">
+                            Iniciar sesión
+                            <!-- Simulating spinner context with an icon, normally hidden unless loading -->
+<span class="material-symbols-outlined text-on-primary-container text-lg animate-spin opacity-50" data-icon="progress_activity">progress_activity</span>
+</span>
+<div class="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
+</button>
+</div>
+</form>
+<!-- Footer -->
+<div class="mt-xl text-center border-t border-outline-variant/30 pt-md">
+<div class="flex items-center justify-center gap-base text-on-surface-variant/70 font-label-caps text-label-caps uppercase tracking-widest">
+<span class="material-symbols-outlined text-sm" data-icon="warning">warning</span>
+                    Solo personal autorizado puede acceder.
+                </div>
+</div>
+</div>
+</div>
+</body></html>

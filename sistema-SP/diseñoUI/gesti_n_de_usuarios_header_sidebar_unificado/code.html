@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Gestión de Usuarios - Perimeter Guard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container": "#1c2021",
+                      "primary-fixed": "#a1f0f6",
+                      "surface-container-low": "#181c1d",
+                      "secondary-fixed": "#e0e2f0",
+                      "tertiary-fixed": "#ffdbc9",
+                      "surface-container-high": "#272b2b",
+                      "outline": "#889393",
+                      "on-tertiary-fixed": "#331200",
+                      "error-container": "#93000a",
+                      "on-tertiary-fixed-variant": "#6e3815",
+                      "on-primary-fixed-variant": "#004f54",
+                      "surface-variant": "#313536",
+                      "on-secondary": "#2d303b",
+                      "primary-fixed-dim": "#85d3da",
+                      "secondary-container": "#444652",
+                      "on-surface": "#e0e3e3",
+                      "on-secondary-fixed-variant": "#444652",
+                      "tertiary-fixed-dim": "#ffb68d",
+                      "outline-variant": "#3f4949",
+                      "on-error-container": "#ffdad6",
+                      "primary-container": "#01696f",
+                      "secondary": "#c4c6d3",
+                      "background": "#101414",
+                      "on-error": "#690005",
+                      "tertiary": "#ffb68d",
+                      "tertiary-container": "#8b4f2a",
+                      "surface-container-highest": "#313536",
+                      "surface": "#101414",
+                      "on-primary-fixed": "#002022",
+                      "on-background": "#e0e3e3",
+                      "inverse-surface": "#e0e3e3",
+                      "surface-container-lowest": "#0b0f0f",
+                      "secondary-fixed-dim": "#c4c6d3",
+                      "on-tertiary": "#522302",
+                      "on-tertiary-container": "#ffceb5",
+                      "surface-tint": "#85d3da",
+                      "on-secondary-fixed": "#181b25",
+                      "on-primary": "#00363a",
+                      "surface-bright": "#363a3a",
+                      "primary": "#85d3da",
+                      "on-primary-container": "#97e6ec",
+                      "on-surface-variant": "#bec8c9",
+                      "inverse-on-surface": "#2d3131",
+                      "surface-dim": "#101414",
+                      "on-secondary-container": "#b2b4c2",
+                      "inverse-primary": "#01696f",
+                      "error": "#ffb4ab"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xl": "32px",
+                      "sm": "12px",
+                      "gutter": "16px",
+                      "lg": "24px",
+                      "container-margin": "24px",
+                      "md": "16px",
+                      "base": "4px",
+                      "xs": "8px"
+              },
+              "fontFamily": {
+                      "h1": [
+                              "Inter"
+                      ],
+                      "h2": [
+                              "Inter"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "label-caps": [
+                              "Inter"
+                      ],
+                      "mono-data": [
+                              "monospace"
+                      ],
+                      "h3": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "h1": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "h2": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "1",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "mono-data": [
+                              "14px",
+                              {
+                                      "lineHeight": "1",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "h3": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined[data-weight="fill"] {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    
+        .blinking-dot {
+            animation: blink 1.5s infinite;
+        }
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-lg text-body-lg flex h-screen overflow-hidden">
+<!-- SideNavBar -->
+<nav class="hidden md:flex flex-col h-full fixed left-0 top-0 z-40 bg-slate-900 h-screen w-64 border-r border-r border-slate-800 shadow-xl font-inter text-sm antialiased text-teal-500">
+<div class="p-6 border-b border-slate-800">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-500 shadow-[0_0_15px_rgba(20,184,166,0.1)]">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24">shield_with_house</span>
+</div>
+<div>
+<div class="text-lg font-black text-white leading-tight">Guardia<br/>Perimetral</div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="text-slate-400 text-xs font-medium uppercase tracking-wider opacity-70">Security Admin</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-teal-500 blinking-dot shadow-[0_0_8px_#14b8a6]"></span>
+<span class="text-[11px] font-medium text-teal-500/90 tracking-tight">System Status: MQTT Online</span>
+</div>
+</div>
+</div>
+<ul class="flex flex-col flex-grow w-full mt-4 space-y-1">
+<li>
+<a class="text-slate-400 hover:text-slate-100 flex items-center px-4 py-3 hover:bg-slate-800 transition-all duration-200" href="#">
+<span class="material-symbols-outlined mr-3">shield</span>
+                    Zonas
+                </a>
+</li>
+<li>
+<a class="text-slate-400 hover:text-slate-100 flex items-center px-4 py-3 hover:bg-slate-800 transition-all duration-200" href="#">
+<span class="material-symbols-outlined mr-3">list</span>
+                    Historial
+                </a>
+</li>
+<li>
+<a class="bg-teal-900/20 text-teal-400 border-r-2 border-teal-500 flex items-center px-4 py-3 hover:bg-slate-800 transition-all duration-200 Active: scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined mr-3" data-weight="fill">group</span>
+                    Usuarios
+                </a>
+</li>
+</ul>
+<div class="px-4 py-6 border-t border-slate-800 mt-auto">
+<ul class="flex flex-col space-y-1 w-full">
+<li>
+<a class="text-slate-400 hover:text-slate-100 flex items-center px-4 py-3 hover:bg-slate-800 transition-all duration-200" href="#">
+<span class="material-symbols-outlined mr-3">settings</span>
+                        Configuración
+                    </a>
+</li>
+<li>
+<a class="text-slate-400 hover:text-slate-100 flex items-center px-4 py-3 hover:bg-slate-800 transition-all duration-200" href="#">
+<span class="material-symbols-outlined mr-3">logout</span>
+                        Cerrar Sesión
+                    </a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content -->
+<div class="flex-1 flex flex-col md:ml-64 w-full relative h-screen overflow-y-auto">
+<!-- TopNavBar (Mobile mainly, but keeping structure for consistency if needed on top) -->
+<header class="flex justify-between items-center w-full px-6 h-16 bg-slate-950/80 backdrop-blur-md docked full-width top-0 sticky border-b border-slate-800 z-30 md:hidden">
+<div class="text-lg font-bold tracking-tighter text-teal-500">Perimeter Guard</div>
+<div class="flex items-center space-x-4 text-teal-600 dark:text-teal-500 font-inter text-sm font-medium tracking-tight">
+<button class="hover:bg-slate-800/50 transition-colors p-2 rounded-full Active: opacity-80 duration-150">
+<span class="material-symbols-outlined">sensors</span>
+</button>
+<button class="hover:bg-slate-800/50 transition-colors p-2 rounded-full Active: opacity-80 duration-150">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="hover:bg-slate-800/50 transition-colors p-2 rounded-full Active: opacity-80 duration-150">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<main class="flex-1 p-container-margin w-full max-w-7xl mx-auto">
+<!-- Page Header -->
+<header class="flex justify-between pb-4 border-b border-surface-variant flex-row items-center mb-xl">
+<div class="flex items-center justify-between w-full">
+<h1 class="font-h1 text-h1 text-on-background">
+        Usuarios
+    </h1>
+<div class="flex items-center gap-6 text-primary">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24">
+            sensors
+        </span>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined text-[24px] text-primary" style="font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24">
+                notifications
+            </span>
+<span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-error rounded-full border-2 border-background"></span>
+</div>
+</div>
+</div>
+</header>
+<!-- User Cards Grid (Bento style approach for users) -->
+<div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-gutter">
+<!-- Card 1: Active Admin -->
+<div class="bg-[#1a1d27] border border-[#2d323d] rounded-lg p-lg flex flex-col gap-md hover:shadow-[0_4px_12px_rgba(0,0,0,0.4)] transition-shadow">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-md">
+<img alt="Carlos Mendoza" class="w-12 h-12 rounded-full object-cover border border-outline-variant" data-alt="A highly detailed professional portrait of a male security administrator in a dark, high-tech control room setting. The lighting is moody with subtle teal and blue screens illuminating his face softly. He wears a dark navy tactical polo shirt. The aesthetic is modern, serious, and cinematic, matching a minimalist industrial UI style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIoOgiGwxrZ6rmNVawHVPvwCDBCwjyRGPCkYQ3NqD5HtxILLhBZdfV_3LW5g7MUxLoND8vg0ZYP0gFf9etWihmy7L-yMahC0mbOE2XWIrRumQfhANQefrztcowe-ch_-Ku-4I5KZC72kA2bTfnuJVXaLEdrUPJGXtHcwvWWFeffmcMlJ-xPMCu9xey0xpuze60gJyxkVQKtJhqb0ha5OttoRWmQRE823OfNX1NJbmAsVV4KeVAagkWJtTPw3npyQui98_BEjuHc3a7"/>
+<div>
+<h3 class="font-h3 text-h3 text-on-surface">Carlos Mendoza</h3>
+<p class="font-mono-data text-mono-data text-on-surface-variant">c.mendoza</p>
+</div>
+</div>
+<span class="bg-primary/20 text-primary-fixed border border-primary/30 px-2 py-1 rounded font-label-caps text-label-caps flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-fixed"></span> Activo
+                        </span>
+</div>
+<div class="grid grid-cols-2 gap-sm mt-sm">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant mb-1">ROL</span>
+<span class="font-body-sm text-body-sm text-on-surface">Administrador</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant mb-1">TELÉFONO</span>
+<span class="font-mono-data text-mono-data text-on-surface">+52 55 1234 5678</span>
+</div>
+</div>
+<div class="flex items-center gap-sm mt-auto pt-md border-t border-outline-variant/30">
+<button class="flex-1 flex items-center justify-center gap-2 font-body-sm text-body-sm text-on-surface bg-surface-variant/50 hover:bg-surface-variant border border-outline-variant rounded py-2 transition-colors">
+<span class="material-symbols-outlined text-[16px]">edit</span> Editar
+                        </button>
+<button class="flex-1 flex items-center justify-center gap-2 font-body-sm text-body-sm text-error bg-error-container/10 hover:bg-error-container/20 border border-error-container/30 rounded py-2 transition-colors">
+<span class="material-symbols-outlined text-[16px]">block</span> Desactivar
+                        </button>
+</div>
+</div>
+<!-- Card 2: Active User -->
+<div class="bg-[#1a1d27] border border-[#2d323d] rounded-lg p-lg flex flex-col gap-md hover:shadow-[0_4px_12px_rgba(0,0,0,0.4)] transition-shadow">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-md">
+<img alt="Elena Ríos" class="w-12 h-12 rounded-full object-cover border border-outline-variant" data-alt="A striking portrait of a female operations manager in a dim, futuristic server room. The ambient light casts cool cyan and deep navy shadows across her determined expression. She wears a professional dark blazer. The visual style is crisp, high-contrast, and deeply aligned with a technical, minimalist industrial brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAs9IZQ9lcj0R9OchhsY_cssxsAdigViWZtUp6t1S4dGwHHXZD7TaD5SqwYTdXYWFRZh38jnEsYMIHAXmKnsZjvA3izJavuzTyhBtDfDgHnLqBpKMRF6FY8MFRK62y40aCwjgVjMEiyQtIPt3AeJoM5_s9NNGV92f53QKzQLAcnQLiOuEB_HNUALGqr45L3aOF6w5F6VujGk_Tqp4GT-PVuayUT61DLbza32y2MCUtjlzECeGoTOtL9-lShgjN0H-mBl0BuITBlNHyr"/>
+<div>
+<h3 class="font-h3 text-h3 text-on-surface">Elena Ríos</h3>
+<p class="font-mono-data text-mono-data text-on-surface-variant">e.rios</p>
+</div>
+</div>
+<span class="bg-primary/20 text-primary-fixed border border-primary/30 px-2 py-1 rounded font-label-caps text-label-caps flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-fixed"></span> Activo
+                        </span>
+</div>
+<div class="grid grid-cols-2 gap-sm mt-sm">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant mb-1">ROL</span>
+<span class="font-body-sm text-body-sm text-on-surface">Responsable</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant mb-1">TELÉFONO</span>
+<span class="font-mono-data text-mono-data text-on-surface">+52 55 8765 4321</span>
+</div>
+</div>
+<div class="flex items-center gap-sm mt-auto pt-md border-t border-outline-variant/30">
+<button class="flex-1 flex items-center justify-center gap-2 font-body-sm text-body-sm text-on-surface bg-surface-variant/50 hover:bg-surface-variant border border-outline-variant rounded py-2 transition-colors">
+<span class="material-symbols-outlined text-[16px]">edit</span> Editar
+                        </button>
+<button class="flex-1 flex items-center justify-center gap-2 font-body-sm text-body-sm text-error bg-error-container/10 hover:bg-error-container/20 border border-error-container/30 rounded py-2 transition-colors">
+<span class="material-symbols-outlined text-[16px]">block</span> Desactivar
+                        </button>
+</div>
+</div>
+<!-- Card 3: Inactive User -->
+<div class="bg-[#1a1d27] border border-[#2d323d] rounded-lg p-lg flex flex-col gap-md opacity-75 hover:opacity-100 hover:shadow-[0_4px_12px_rgba(0,0,0,0.4)] transition-all">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-md grayscale">
+<img alt="Roberto Jiménez" class="w-12 h-12 rounded-full object-cover border border-outline-variant" data-alt="A detailed digital avatar of a male security guard against a solid black background. The lighting is flat and moody, emphasizing a serious, inactive state within a security application. He is dressed in standard dark tactical gear. The overall image maintains a cohesive minimalist industrial aesthetic with muted tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4cb3lhuzhZ63EfdPvlrKj7FmiFBzND3J3Ue9NZhI0x8v2TLnWdovvnOd83yNX4d9a5qoQAz4tVnguYMwqzY63Z4JFVzLgaIYa10C_FCWkmZ67GsrksaptbZJKI__J3QFhHf3W4D2K0MC7mZrzSKykzhGR4JxCqETPwMoPJdcckM7m0FjeX-XO_qxRReUJ5VyXp1crD2Tp8w2ol0M5_ZV9Fg4uYdbaLs5aR4sJWX6zwnm8_qFjHWiSnGNos8__6IuDNHo_XTJ1nkDd"/>
+<div>
+<h3 class="font-h3 text-h3 text-on-surface">Roberto Jiménez</h3>
+<p class="font-mono-data text-mono-data text-on-surface-variant">r.jimenez</p>
+</div>
+</div>
+<span class="bg-surface-variant text-on-surface-variant border border-outline-variant px-2 py-1 rounded font-label-caps text-label-caps flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span> Inactivo
+                        </span>
+</div>
+<div class="grid grid-cols-2 gap-sm mt-sm">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant mb-1">ROL</span>
+<span class="font-body-sm text-body-sm text-on-surface">Responsable</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant mb-1">TELÉFONO</span>
+<span class="font-mono-data text-mono-data text-on-surface">+52 33 4455 6677</span>
+</div>
+</div>
+<div class="flex items-center gap-sm mt-auto pt-md border-t border-outline-variant/30">
+<button class="flex-1 flex items-center justify-center gap-2 font-body-sm text-body-sm text-on-surface bg-surface-variant/50 hover:bg-surface-variant border border-outline-variant rounded py-2 transition-colors">
+<span class="material-symbols-outlined text-[16px]">edit</span> Editar
+                        </button>
+<button class="flex-1 flex items-center justify-center gap-2 font-body-sm text-body-sm text-primary-fixed bg-primary-container/10 hover:bg-primary-container/20 border border-primary-container/30 rounded py-2 transition-colors">
+<span class="material-symbols-outlined text-[16px]">check_circle</span> Activar
+                        </button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

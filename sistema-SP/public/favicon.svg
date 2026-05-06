@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Fondo redondeado -->
+  <rect x="0" y="0" width="100" height="100" rx="22" fill="#0F6E56"/>
+  <!-- Escudo -->
+  <path d="M50,18 L73,30 L73,52 Q73,72 50,82 Q27,72 27,52 L27,30 Z" fill="#1D9E75"/>
+  <!-- Arco del candado -->
+  <path d="M36,44 A14,14 0 0,1 64,44 L64,50 L36,50 Z" fill="none" stroke="#E1F5EE" stroke-width="6" stroke-linecap="round"/>
+  <!-- Cuerpo del candado -->
+  <rect x="32" y="50" width="36" height="24" rx="5" fill="#E1F5EE"/>
+  <!-- Ojo del candado -->
+  <circle cx="50" cy="60" r="5" fill="#0F6E56"/>
+  <rect x="47" y="63" width="6" height="7" rx="2" fill="#0F6E56"/>
+</svg>
