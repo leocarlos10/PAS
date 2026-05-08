@@ -1,11 +1,37 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
 
 export const ProfileMenu = () => {
     const [open, setOpen] = useState<boolean>(false);
+    const containerRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(()=> {
+
+        // la funcion detecta los clicks fuera del contenedor
+        const handleClickOutside = (event: MouseEvent) => {
+            if (!containerRef.current) return;
+
+            const clickedOutside = !containerRef.current.contains(event.target as Node);
+
+            if (clickedOutside) {
+                setOpen(false);
+            }
+        };
+
+        // solo escucha clicks cuando el menú está abierto
+        if (open) {
+            document.addEventListener("mousedown", handleClickOutside);
+        }
+
+        // cuando se cierra el componente, o se desmonta, se limpia el listener
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        }
+
+    }, [open])
 
     return (
-        <div className="relative">
+        <div ref={containerRef} className="relative">
             {/* Botón trigger */}
             <button 
                 onClick={() => setOpen(!open)}
