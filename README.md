@@ -1,35 +1,43 @@
-# Guia basica para trabajar en este proyecto.
+### Guia basica para trabajar en este proyecto.
 
-# 1. Mantener la rama main actualizada
+### 1. Mantener la rama main actualizada
+```bash
 git switch main
 git pull origin main
+```
 
-# 2. Crear tu rama para trabajar. 
+### 2. Crear tu rama para trabajar. 
+```bash
 git switch -c feature/login-pantalla
+```
 
-# Trabajas y guardas tus cambios en la rama. 
-
+### Trabajas y guardas tus cambios en la rama. 
+```bash
 git commit -m "feat: crear pantalla de login"
 git commit -m "fix: corregir responsive"
+```
 
-
-# 3. ANTES DE SUBIR 
+### 3. ANTES DE SUBIR 
+```bash
 git switch main
 git pull origin main  
 git switch feature/login-pantalla
 git merge main 
+```
 
 Se hace  merge de main en caso de conflictos para solucionarlos localmente.   
 
-# 4. Subir cambios
+### 4. Subir cambios
+```bash
 git push origin feature/login-pantalla
+```
 
-# 5. Crear pull request. 
+### 5. Crear pull request. 
 Importante que luego de crear la pull request. 
 Crear un Squash and merge  en caso de tener varios commits en la rama. 
 Fucionarlos a un solo commit en la rama main. 
 
-# Importante.
+### Importante.
 Si la rama se **fusionó** (mergeó) y cumplió su propósito, eliminarla de GitHub luego
 del merge. Además de local.
 
@@ -37,5 +45,5 @@ Solo existirá una rama main y las ramas que se utilicen serán de funcionalidad
 Evitar mezclar distintas funcionalidades o correcciones de distinta naturaleza en una sola rama.
 
 
-# Advertencia. 
+### Advertencia. 
 No haga push directos main bajo ninguna cirscustancia.
