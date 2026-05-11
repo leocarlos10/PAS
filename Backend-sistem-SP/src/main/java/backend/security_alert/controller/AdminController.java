@@ -4,8 +4,8 @@ import backend.security_alert.dto.common.Response;
 import backend.security_alert.dto.user.AdminUserResponse;
 import backend.security_alert.dto.user.UpdateUserRequest;
 import backend.security_alert.service.AdminService;
+import backend.security_alert.dto.user.UpdateUserStatusRequest;
 import java.util.List;
-import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -72,9 +72,8 @@ public class AdminController {
     @PutMapping("/{id}/status")
     public ResponseEntity<Response<AdminUserResponse>> toggleUserActive(
             @PathVariable Long id,
-            @RequestBody Map<String, Boolean> body) {
-        Boolean active = body.get("active");
-        AdminUserResponse user = adminService.toggleUserActive(id, active);
+            @RequestBody UpdateUserStatusRequest request) {
+        AdminUserResponse user = adminService.toggleUserActive(id, request.getActive());
 
         Response<AdminUserResponse> response = Response.<AdminUserResponse>builder()
                 .responseCode(HttpStatus.OK.value())
