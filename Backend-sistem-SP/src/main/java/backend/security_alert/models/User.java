@@ -22,9 +22,11 @@ public class User {
     private Long id;
     private String gmail;
     private String password; 
+    @Enumerated(EnumType.STRING)
     private UserRol user_rol;
-    private String  name; 
-    private Boolean  active; 
+    private String name;
+    private String phone;
+    private Boolean active; 
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
