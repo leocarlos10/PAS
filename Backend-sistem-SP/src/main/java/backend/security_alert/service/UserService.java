@@ -7,13 +7,14 @@ import backend.security_alert.dto.user.LoginRequest;
 import backend.security_alert.dto.user.LoginResponse;
 import backend.security_alert.dto.user.RegisterRequest;
 import backend.security_alert.dto.user.RegisterResponse;
+import backend.security_alert.exception.DataExistException;
+import backend.security_alert.exception.NotFoundException;
 import backend.security_alert.models.User;
 import backend.security_alert.models.enums.UserRol;
 import backend.security_alert.repository.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import java.util.List;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -21,7 +22,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class UserService {
@@ -46,10 +46,7 @@ public class UserService {
     @Transactional
     public RegisterResponse register(RegisterRequest request) {
         if (userRepository.existsByGmail(request.getEmail())) {
-            throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "Email already registered"
-            );
+            throw new DataExistException("Email already registered");
         }
 
         String hashedPassword = encoder.encode(request.getPassword());
@@ -83,7 +80,7 @@ public class UserService {
     ) {
         userRepository.findByGmail(request.getEmail())
             .orElseThrow(() ->
-                new RuntimeException("User not found. Please register first")
+                new NotFoundException("User not found. Please register first")
             );
 
         Authentication authentication = authenticationManager.authenticate(

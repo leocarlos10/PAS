@@ -1,6 +1,9 @@
 spring:
   application:
     name: security_alert
+  mvc:
+    problemdetails:
+      enabled: false
 
   datasource:
     url: ${DB_URL}
@@ -25,3 +28,8 @@ spring:
 
   config:
     import: optional:secrets.properties
+
+server:
+  error:
+    include-message: always
+    include-binding-errors: always

@@ -67,7 +67,7 @@ public class WebSecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/**", "/api/ok")
+                        .requestMatchers("/api/v1/auth/**", "/error")
                         .permitAll()
                         .anyRequest()
                         .authenticated());
