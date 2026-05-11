@@ -53,7 +53,7 @@ public class UserDetailsImpl implements UserDetails {
                 new SimpleGrantedAuthority("ROLE_" + (rol != null ? rol.name() : UserRol.USUARIO.name())));
 
         return new UserDetailsImpl(
-                user.getId_user(),
+                user.getId(),
                 user.getGmail(),
                 user.getGmail(),
                 user.getPassword(),

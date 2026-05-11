@@ -18,7 +18,8 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_user;
+    @Column(name = "id_user")
+    private Long id;
     private String gmail;
     private String password; 
     private UserRol user_rol;
