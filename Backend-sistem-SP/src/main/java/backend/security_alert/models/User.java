@@ -23,6 +23,8 @@ public class User {
     private String gmail;
     private String password; 
     private UserRol user_rol;
+    private String  name; 
+    private Boolean  active; 
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
