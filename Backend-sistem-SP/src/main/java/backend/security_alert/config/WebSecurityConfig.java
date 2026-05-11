@@ -67,10 +67,14 @@ public class WebSecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/**", "/error")
-                        .permitAll()
-                        .anyRequest()
-                        .authenticated());
+                .requestMatchers("/api/v1/auth/**", "/error").permitAll()
+                .requestMatchers("/swagger-ui.html", 
+                                 "/swagger-ui/**", 
+                                 "/v3/api-docs/**", 
+                                 "/swagger-resources/**", 
+                                 "/webjars/**").permitAll()
+                .anyRequest()
+                .authenticated());
 
         http.authenticationProvider(authenticationProvider());
 
