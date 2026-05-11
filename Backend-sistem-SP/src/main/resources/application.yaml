@@ -33,3 +33,13 @@ server:
   error:
     include-message: always
     include-binding-errors: always
+
+
+
+springdoc:
+  swagger-ui:
+    enabled: ${SWAGGER_ENABLED}    
+    path: /swagger-ui.html
+  api-docs:
+    enabled: ${SWAGGER_ENABLED}
+    path: /v3/api-docs
