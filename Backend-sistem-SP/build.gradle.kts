@@ -2,6 +2,7 @@ plugins {
 	java
 	id("org.springframework.boot") version "4.0.6"
 	id("io.spring.dependency-management") version "1.1.7"
+    id("io.freefair.lombok") version "9.5.0"
 }
 
 group = "backend"
@@ -22,10 +23,18 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
 	runtimeOnly("com.mysql:mysql-connector-j")
-	testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
+    compileOnly("org.projectlombok:lombok:1.18.46")
+    annotationProcessor("org.projectlombok:lombok:1.18.46")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
+    testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
 	testImplementation("org.springframework.boot:spring-boot-starter-security-test")
 	testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    implementation ("io.jsonwebtoken:jjwt-api:0.12.6")
+    runtimeOnly ("io.jsonwebtoken:jjwt-impl:0.12.6")
+    runtimeOnly ("io.jsonwebtoken:jjwt-jackson:0.12.6")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+
 }
 
 tasks.withType<Test> {

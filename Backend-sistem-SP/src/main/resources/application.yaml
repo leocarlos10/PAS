@@ -7,11 +7,20 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
-  
-  jpa: 
+
+  jwt:
+    secret:
+      key: ${JWT_SECRET}
+    expiration: ${JWT_EXPIRATION}
+
+  cors:
+    allowed:
+      origins: ${FRONT_URL}
+
+  jpa:
     hibernate:
       ddl-auto: update
-    
+
     database-platform: org.hibernate.dialect.MySQLDialect
 
   config:
