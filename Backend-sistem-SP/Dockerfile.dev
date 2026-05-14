@@ -1,0 +1,9 @@
+FROM gradle:jdk25-noble
+
+WORKDIR /app
+
+COPY . .
+
+EXPOSE 8080
+
+CMD ["gradle", "bootRun", "--no-daemon"]
