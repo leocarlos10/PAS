@@ -31,7 +31,7 @@ public class EventoService {
 
     @Transactional(readOnly = true)
     public Page<EventoHistorialDTO> obtenerHistorialPaginado(int page, int size, Long zonaId, String severidad) {
-        Specification<Evento> spec = Specification.where((Specification<Evento>) null);
+        Specification<Evento> spec = (root, query, cb) -> cb.conjunction();
 
         if (zonaId != null) {
             spec = spec.and((root, query, cb) ->
