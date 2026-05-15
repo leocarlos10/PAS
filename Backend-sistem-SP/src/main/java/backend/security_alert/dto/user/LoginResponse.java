@@ -16,7 +16,7 @@ public class LoginResponse {
 
     // private String nombre;
 
-    private String email;
+    private String username;
     private List<String> roles;
 
     @JsonProperty("access_token")

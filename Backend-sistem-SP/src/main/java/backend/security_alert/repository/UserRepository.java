@@ -8,6 +8,6 @@ import backend.security_alert.models.User;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    Optional<User> findByGmail(String gmail);
-    boolean existsByGmail(String gmail); 
+    Optional<User> findByUsername(String username);
+    boolean existsByUsername(String username); 
 }

@@ -13,7 +13,7 @@ public class AdminUserResponse {
 
     private Long id;
     private String name;
-    private String gmail;
+    private String username;
     private String phone;
     private String role;
     private Boolean active;
