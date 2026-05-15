@@ -24,7 +24,7 @@ public class UserDetailsImpl implements UserDetails {
     private final String nombre;
 
     @Getter
-    private final String email;
+    private final String username;
 
     @JsonIgnore
     private String password;
@@ -34,13 +34,13 @@ public class UserDetailsImpl implements UserDetails {
     public UserDetailsImpl(
             Long id,
             String nombre,
-            String email,
+            String username,
             String password,
             Collection<? extends GrantedAuthority> authorities) {
         
         this.id = id;
         this.nombre = nombre;
-        this.email = email;
+        this.username = username;
         this.password = password;
         this.authorities = authorities;
     
@@ -72,7 +72,7 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email;
+        return username;
     }
 
     @Override
