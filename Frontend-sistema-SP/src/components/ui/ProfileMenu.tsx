@@ -36,18 +36,19 @@ export const ProfileMenu = () => {
             <button 
                 onClick={() => setOpen(!open)}
                 className=" 
-                flex items-center 
+                flex w-full items-center 
                 gap-3
                 rounded-lg 
                 bg-sidebar-accent/60 
                 p-2 
+                group-data-[collapsible=icon]:size-8
                 group-data-[collapsible=icon]:justify-center 
                 hover:bg-sidebar-accent/80 
                 transition-colors
                 cursor-pointer
                 "
             >
-                <div className="flex size-9 items-center justify-center rounded-full bg-sidebar">
+                <div className="flex size-9 items-center justify-center rounded-full bg-sidebar group-data-[collapsible=icon]:size-6">
                     <span className="material-symbols-outlined">person</span>
                 </div>
                 <div className="flex min-w-0 flex-1 flex-col group-data-[collapsible=icon]:hidden">

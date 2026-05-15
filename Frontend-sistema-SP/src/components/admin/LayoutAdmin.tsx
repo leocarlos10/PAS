@@ -2,6 +2,7 @@ import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/s
 import { AppSidebar } from "@/components/admin/AppSidebar"
 
 export const LayoutAdmin = ({ children }: { children: React.ReactNode }) => {
+
   return (
     <SidebarProvider>
       <AppSidebar />
