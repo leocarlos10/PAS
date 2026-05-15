@@ -1,1 +1,1 @@
-export { InicioSesionPage } from "./InicioSesionPage";
+export { InicioSesionPage } from "./LoginPage";
