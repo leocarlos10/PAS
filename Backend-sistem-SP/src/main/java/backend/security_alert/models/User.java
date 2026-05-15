@@ -20,7 +20,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_user")
     private Long id;
-    private String gmail;
+    private String username;
     private String password; 
     @Enumerated(EnumType.STRING)
     private UserRol user_rol;
@@ -46,5 +46,3 @@ public class User {
         this.updatedAt = LocalDateTime.now();
     }
 }
-
-

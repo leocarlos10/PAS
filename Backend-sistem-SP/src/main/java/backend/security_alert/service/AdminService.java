@@ -38,14 +38,14 @@ public class AdminService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + id));
 
-        if (request.getGmail() != null && !request.getGmail().isBlank()) {
-            boolean emailTaken = userRepository.findByGmail(request.getGmail())
+        if (request.getUsername() != null && !request.getUsername().isBlank()) {
+            boolean usernameTaken = userRepository.findByUsername(request.getUsername())
                     .filter(u -> !u.getId().equals(id))
                     .isPresent();
-            if (emailTaken) {
-                throw new DataExistException("Email already in use");
+            if (usernameTaken) {
+                throw new DataExistException("Username already in use");
             }
-            user.setGmail(request.getGmail());
+            user.setUsername(request.getUsername());
         }
 
         if (request.getName() != null && !request.getName().isBlank()) {
@@ -78,7 +78,7 @@ public class AdminService {
         return AdminUserResponse.builder()
                 .id(user.getId())
                 .name(user.getName())
-                .gmail(user.getGmail())
+                .username(user.getUsername())
                 .phone(user.getPhone())
                 .role(user.getUser_rol() != null ? user.getUser_rol().name() : null)
                 .active(user.getActive())

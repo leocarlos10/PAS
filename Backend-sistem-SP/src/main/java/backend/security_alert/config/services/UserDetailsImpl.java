@@ -54,8 +54,8 @@ public class UserDetailsImpl implements UserDetails {
 
         return new UserDetailsImpl(
                 user.getId(),
-                user.getGmail(),
-                user.getGmail(),
+                user.getUsername(),
+                user.getUsername(),
                 user.getPassword(),
                 authorities);
     }
@@ -106,4 +106,3 @@ public class UserDetailsImpl implements UserDetails {
         return Objects.equals(id, user.id);
     }
 }
-
