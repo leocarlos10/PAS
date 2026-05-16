@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
+import { Button } from "./button";
+import { useAuthContext } from "@/context/auth.context";
 
 export const ProfileMenu = () => {
     const [open, setOpen] = useState<boolean>(false);
     const containerRef = useRef<HTMLDivElement | null>(null);
+    const {logout} = useAuthContext();
 
     useEffect(()=> {
 
@@ -67,10 +70,16 @@ export const ProfileMenu = () => {
                         <span>Configuración</span>
                     </a>
                     <div className="border-t border-sidebar-border/50"></div>
-                    <NavLink to="/" className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition-colors">
+                    <div className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition-colors">
                         <span className="material-symbols-outlined text-base">logout</span>
-                        <span>Cerrar sesión</span>
-                    </NavLink>
+                        <Button
+                            variant="ghost"
+                            className="p-0 text-red-400 bg-transparent hover:bg-transparent shadow-none cursor-pointer"
+                            onClick={logout}
+                        >
+                            Cerrar sesión
+                        </Button>
+                    </div>
                 </div>
             )}
         </div>

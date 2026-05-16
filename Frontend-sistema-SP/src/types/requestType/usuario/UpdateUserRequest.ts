@@ -1,5 +1,5 @@
 export type UpdateUserRequest = {
     name: string;
-    gmail: string;
+    username: string;
     phone: string;
 }

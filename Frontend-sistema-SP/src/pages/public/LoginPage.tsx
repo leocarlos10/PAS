@@ -1,15 +1,17 @@
 import logo from "@/assets/logo_sistema_seguridad_perimetral_v3.svg"
+import { useAuth } from "@/hooks";
+import type { LoginRequest, LoginResponse, Response } from "@/types";
 import { useState } from "react";
 import type { SubmitEvent } from "react";
 import { useNavigate } from "react-router-dom";
 
 export const InicioSesionPage = () => {
 
-  const [formEstate, setFormState] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const navigate = useNavigate();
+  const {login, loading, error} = useAuth();
 
-  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     // Obtenemos los datos del formulario
@@ -23,13 +25,16 @@ export const InicioSesionPage = () => {
       return;
     }
 
-    // Simulamos un proceso de inicio de sesión
-    setFormState(true);
-    setTimeout(() => {
-      setFormState(false);
-      alert(`Bienvenido, ${username} - ${password}! inicio de sesion simulado .`);
+    // ejecutamos el login con los datos del formulario
+    const loginRequest = await login({ username, password } as LoginRequest);
+
+    if(loginRequest && loginRequest.responseCode == 200){
+      alert(`${loginRequest.responseMessage}, bienvenido ${loginRequest.data?.username}`);
       navigate("/admin");
-    }, 2000);
+    } else {
+     console.error(loginRequest?.errorList, "Error en login");
+     alert( `No se pudo iniciar sesion ${loginRequest?.errorList[0]?.message}` || "Error en login" );
+    }
 
   }
 
@@ -111,7 +116,7 @@ export const InicioSesionPage = () => {
                   >
                     <span className="relative z-10 flex items-center gap-2 cursor-pointer">
                       Iniciar sesion
-                      {formEstate && (
+                      {loading && (
                              <span className="material-symbols-outlined text-base sm:text-lg opacity-60 animate-spin">
                         progress_activity
                       </span>
