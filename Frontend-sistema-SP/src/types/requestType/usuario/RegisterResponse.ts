@@ -1,4 +1,5 @@
 export type RegisterResponse = {
+    username : string;
     name: string;
-    email: string;
+    phone: string;
 }
