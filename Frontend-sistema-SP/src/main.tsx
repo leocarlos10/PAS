@@ -5,12 +5,15 @@ import { TooltipProvider } from "@/components/ui/tooltip"
 
 import './index.css'
 import {App} from '@/App.tsx'
+import { AuthProvider } from './context/auth.context'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <TooltipProvider>
-        <App />
+        <AuthProvider>
+           <App />
+        </AuthProvider>
       </TooltipProvider>
     </BrowserRouter>
   </StrictMode>,

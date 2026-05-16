@@ -1,0 +1,48 @@
+services:
+  backend:
+    build:
+      context: ./Backend-sistem-SP
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8080:8080"
+    env_file: .env
+    volumes:
+      - ./Backend-sistem-SP:/app
+      - gradle-cache:/home/gradle/.gradle
+    depends_on:
+      - mysql
+
+  frontend:
+    build:
+      context: ./Frontend-sistema-SP
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5173:5173"
+    env_file: .env
+    environment:
+      VITE_API_URL: ${VITE_API_URL}
+      VITE_CRYPTO_SECRET_KEY: ${VITE_CRYPTO_SECRET_KEY}
+    volumes:
+      - ./Frontend-sistema-SP:/app
+      - frontend-node-modules:/app/node_modules
+
+  mysql:
+    image: mysql:8.4
+    ports:
+      - "3306:3306"
+    env_file: .env
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin:5.2
+    ports:
+      - "8081:80"
+    env_file: .env
+    depends_on:
+      - mysql
+
+volumes:
+  mysql-data:
+  gradle-cache:
+  frontend-node-modules:

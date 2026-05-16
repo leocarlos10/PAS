@@ -1,6 +1,5 @@
 package backend.security_alert.dto.user;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -15,8 +14,7 @@ import lombok.NoArgsConstructor;
 public class LoginRequest {
     @NotBlank
     @Size(max = 100)
-    @Email(message = "Please provide a valid email address")
-    private String email;
+    private String username;
 
     @NotBlank
     @Size(max = 100)

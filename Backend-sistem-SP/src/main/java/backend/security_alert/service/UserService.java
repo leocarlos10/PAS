@@ -45,16 +45,19 @@ public class UserService {
 
     @Transactional
     public RegisterResponse register(RegisterRequest request) {
-        if (userRepository.existsByGmail(request.getEmail())) {
-            throw new DataExistException("Email already registered");
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new DataExistException("Username already registered");
         }
 
         String hashedPassword = encoder.encode(request.getPassword());
 
         User user = new User();
-        user.setGmail(request.getEmail());
+        user.setUsername(request.getUsername());
         user.setPassword(hashedPassword);
         user.setUser_rol(UserRol.USUARIO);
+        user.setName(request.getName());
+        user.setPhone(request.getPhone());
+        user.setActive(false);
 
         try {
             userRepository.save(user);
@@ -66,8 +69,9 @@ public class UserService {
         }
 
         RegisterResponse registerUserResponse = RegisterResponse.builder()
-            .name(user.getGmail())
-            .email(user.getGmail())
+            .username(user.getUsername())
+            .name(user.getName())
+            .phone(user.getPhone())
             .build();
 
         return registerUserResponse;
@@ -78,14 +82,14 @@ public class UserService {
         LoginRequest request,
         HttpServletResponse response
     ) {
-        userRepository.findByGmail(request.getEmail())
+        userRepository.findByUsername(request.getUsername())
             .orElseThrow(() ->
                 new NotFoundException("User not found. Please register first")
             );
 
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
-                request.getEmail(),
+                request.getUsername(),
                 request.getPassword()
             )
         );
@@ -101,7 +105,7 @@ public class UserService {
             .toList();
 
         LoginResponse loginResponse = LoginResponse.builder()
-            .email(userDetails.getUsername())
+            .username(userDetails.getUsername())
             .roles(roles)
             .accessToken(jwt)
             .tokenType("Bearer")
@@ -115,7 +119,5 @@ public class UserService {
     }
 
 }
-
-
 
 
