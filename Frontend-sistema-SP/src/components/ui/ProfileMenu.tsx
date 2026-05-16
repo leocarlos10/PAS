@@ -39,7 +39,7 @@ export const ProfileMenu = () => {
             <button 
                 onClick={() => setOpen(!open)}
                 className=" 
-                flex w-full items-center 
+                flex items-center 
                 gap-3
                 rounded-lg 
                 bg-sidebar-accent/60 

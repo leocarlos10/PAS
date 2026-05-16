@@ -23,7 +23,6 @@ public class UserDetailsImpl implements UserDetails {
     @Getter
     private final String nombre;
 
-    @Getter
     private final String username;
 
     @JsonIgnore
