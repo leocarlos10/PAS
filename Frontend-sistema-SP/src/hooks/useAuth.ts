@@ -2,12 +2,14 @@ import { useState } from "react";
 import { LoginUser } from "@/api/usuarios.api";
 import { type LoginRequest, type LoginResponse, type Response } from "@/types";
 import { setSecureItem } from "@/utils";
+import { useAuthContext } from "@/context/auth.context";
 
 type LoginResult = Response<LoginResponse> | null;
 
 export function useAuth() {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const { refreshFromStorage } = useAuthContext();
 
 	const login = async (loginRequest: LoginRequest): Promise<LoginResult> => {
 		setLoading(true);
@@ -31,6 +33,7 @@ export function useAuth() {
             // guardamos los datos cifrados en localStorage
 			setSecureItem("token", authData.access_token);
 			setSecureItem("auth", authData);
+			refreshFromStorage();
 
 			return response;
 		} catch (err) {

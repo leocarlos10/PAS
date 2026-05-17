@@ -10,7 +10,7 @@ export const ZonasPage = () => {
       />
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <article className="relative rounded-xl border border-border bg-card p-6 shadow-sm">
-          <div className="absolute left-0 top-0 h-1 w-full rounded-t-xl bg-emerald-400" />
+          <div className="absolute left-0 top-0 h-1 w-full rounded-t-xl bg-success" />
           <header className="flex flex-wrap items-start justify-between gap-4">
             <div className="flex items-start gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border bg-muted">
@@ -25,7 +25,7 @@ export const ZonasPage = () => {
                 </div>
               </div>
             </div>
-            <button className="flex items-center gap-2 rounded-lg border border-red-500 px-4 py-2 text-sm text-red-400 transition-colors hover:bg-red-500/10">
+            <button className="flex items-center gap-2 rounded-lg border border-danger px-4 py-2 text-sm text-danger transition-colors hover:bg-danger/10">
               <span className="material-symbols-outlined text-[20px]">shield_with_heart</span>
               Desarmar
             </button>
@@ -40,23 +40,23 @@ export const ZonasPage = () => {
               <div className="space-y-3">
                 <div className="flex items-center justify-between rounded-md border border-border/60 bg-card p-3">
                   <div className="flex items-center gap-3">
-                    <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                    <span className="h-2 w-2 rounded-full bg-success" />
                     <div>
                       <div className="text-sm font-medium">S01 - Magnetico Puerta</div>
                       <div className="text-xs text-muted-foreground">Ultima vez: hace 2 min</div>
                     </div>
                   </div>
-                  <span className="text-sm text-emerald-400">Sin novedad</span>
+                  <span className="text-sm text-success">Sin novedad</span>
                 </div>
                 <div className="flex items-center justify-between rounded-md border border-border/60 bg-card p-3">
                   <div className="flex items-center gap-3">
-                    <span className="h-2 w-2 rounded-full bg-amber-400" />
+                    <span className="h-2 w-2 rounded-full bg-warning" />
                     <div>
                       <div className="text-sm font-medium">S02 - Movimiento PIR</div>
                       <div className="text-xs text-muted-foreground">Ultima vez: ahora</div>
                     </div>
                   </div>
-                  <span className="text-sm text-amber-300">Activo</span>
+                  <span className="text-sm text-warning-muted">Activo</span>
                 </div>
               </div>
             </div>
@@ -69,14 +69,14 @@ export const ZonasPage = () => {
               <div className="relative space-y-4 pl-6">
                 <div className="absolute left-2 top-2 h-[calc(100%-16px)] w-px bg-border" />
                 <div className="relative flex gap-3">
-                  <div className="mt-1 h-5 w-5 rounded-full border-2 border-amber-400 bg-card" />
+                  <div className="mt-1 h-5 w-5 rounded-full border-2 border-warning bg-card" />
                   <div>
                     <div className="text-sm">Movimiento detectado S02</div>
                     <div className="text-[10px] uppercase text-muted-foreground">10:42 AM</div>
                   </div>
                 </div>
                 <div className="relative flex gap-3">
-                  <div className="mt-1 h-5 w-5 rounded-full border-2 border-emerald-400 bg-card" />
+                  <div className="mt-1 h-5 w-5 rounded-full border-2 border-success bg-card" />
                   <div>
                     <div className="text-sm">Zona armada (Manual)</div>
                     <div className="text-[10px] uppercase text-muted-foreground">08:00 AM</div>
@@ -125,7 +125,7 @@ export const ZonasPage = () => {
                 </div>
               </div>
             </div>
-            <button className="flex items-center gap-2 rounded-lg bg-emerald-400 px-4 py-2 text-sm text-emerald-950 transition-colors hover:bg-emerald-300">
+            <button className="flex items-center gap-2 rounded-lg bg-success px-4 py-2 text-sm text-success-foreground transition-colors hover:bg-success-muted">
               <span className="material-symbols-outlined text-[20px]">shield</span>
               Armar Zona
             </button>

@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/admin/users")
-@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
     private final AdminService adminService;
@@ -28,6 +27,9 @@ public class AdminController {
         this.adminService = adminService;
     }
 
+    /* 
+        tanto los admins como los Usuarios activos pueden ver la lista de usuarios.
+    */
     @GetMapping
     public ResponseEntity<Response<List<AdminUserResponse>>> listAllUsers() {
         List<AdminUserResponse> users = adminService.listAllUsers();
@@ -42,6 +44,7 @@ public class AdminController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Response<AdminUserResponse>> getUserById(@PathVariable Long id) {
         AdminUserResponse user = adminService.getUserById(id);
 
@@ -55,6 +58,7 @@ public class AdminController {
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Response<AdminUserResponse>> updateUser(
             @PathVariable Long id,
             @RequestBody UpdateUserRequest request) {
@@ -70,6 +74,7 @@ public class AdminController {
     }
 
     @PutMapping("/{id}/status")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Response<AdminUserResponse>> toggleUserActive(
             @PathVariable Long id,
             @RequestBody UpdateUserStatusRequest request) {

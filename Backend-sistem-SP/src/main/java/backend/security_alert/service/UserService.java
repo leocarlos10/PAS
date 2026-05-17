@@ -54,10 +54,10 @@ public class UserService {
         User user = new User();
         user.setUsername(request.getUsername());
         user.setPassword(hashedPassword);
-        user.setUser_rol(UserRol.USUARIO);
+        user.setUser_rol(request.getRole());
         user.setName(request.getName());
         user.setPhone(request.getPhone());
-        user.setActive(false);
+        user.setActive(true);
 
         try {
             userRepository.save(user);

@@ -1,6 +1,6 @@
 import logo from "@/assets/logo_sistema_seguridad_perimetral_v3.svg"
 import { useAuth } from "@/hooks";
-import type { LoginRequest, LoginResponse, Response } from "@/types";
+import type { LoginRequest } from "@/types";
 import { useState } from "react";
 import type { SubmitEvent } from "react";
 import { useNavigate } from "react-router-dom";
@@ -9,7 +9,7 @@ export const InicioSesionPage = () => {
 
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const navigate = useNavigate();
-  const {login, loading, error} = useAuth();
+  const {login, loading} = useAuth();
 
   const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -39,11 +39,11 @@ export const InicioSesionPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#101414] text-[#e0e3e3]">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="min-h-screen px-4 py-10 sm:px-6 sm:py-12 flex items-center justify-center ">
         <div className="w-full max-w-[22rem] sm:max-w-md">
-          <div className="relative  rounded-2xl border border-[rgba(136,147,147,0.1)] bg-[linear-gradient(145deg,rgba(28,32,33,0.9)_0%,rgba(24,28,29,0.95)_100%)] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] backdrop-blur">
-            {<div className="absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-transparent via-[#85d3da] to-transparent opacity-50" />}
+          <div className="relative rounded-2xl border border-border/10 bg-card/95 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] backdrop-blur">
+            {<div className="absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-transparent via-primary to-transparent opacity-50" />}
             <div className="p-6 sm:p-8">
               <div className="text-center mb-6 sm:mb-8">
                 <div className="mx-auto mb-3 sm:mb-4 flex items-center justify-center">
@@ -54,7 +54,7 @@ export const InicioSesionPage = () => {
                   />
                 </div>
 
-                <p className="mt-2 text-xs sm:text-sm text-[#bec8c9]">
+                <p className="mt-2 text-xs sm:text-sm text-muted-foreground">
                   Acceso restringido a personal autorizado
                 </p>
               </div>
@@ -67,11 +67,11 @@ export const InicioSesionPage = () => {
                     Usuario
                   </label>
                   <div className="relative">
-                    <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg sm:text-xl text-[#bec8c9]">
+                    <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg sm:text-xl text-muted-foreground">
                       person
                     </span>
                     <input
-                      className="w-full rounded border border-[#3f4949] bg-[#181c1d] py-2.5 pl-10 pr-3 text-sm text-[#e0e3e3] placeholder:text-[#889393] outline-none transition focus:border-[#85d3da] focus:ring-1 focus:ring-[#85d3da]"
+                      className="w-full rounded border border-border bg-sidebar py-2.5 pl-10 pr-3 text-sm text-foreground placeholder:text-muted-foreground outline-none transition focus:border-ring focus:ring-1 focus:ring-ring"
                       id="username"
                       name="username"
                       placeholder="Usuario"
@@ -87,11 +87,11 @@ export const InicioSesionPage = () => {
                     Contrasena
                   </label>
                   <div className="relative">
-                    <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg sm:text-xl text-[#bec8c9]">
+                    <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg sm:text-xl text-muted-foreground">
                       lock
                     </span>
                     <input
-                      className="w-full rounded border border-[#3f4949] bg-[#181c1d] py-2.5 pl-10 pr-10 text-sm text-[#e0e3e3] placeholder:text-[#889393] outline-none transition focus:border-[#85d3da] focus:ring-1 focus:ring-[#85d3da]"
+                      className="w-full rounded border border-border bg-sidebar py-2.5 pl-10 pr-10 text-sm text-foreground placeholder:text-muted-foreground outline-none transition focus:border-ring focus:ring-1 focus:ring-ring"
                       id="password"
                       name="password"
                       placeholder="Contrasena"
@@ -99,7 +99,7 @@ export const InicioSesionPage = () => {
                       required
                     />
                     <button
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#889393] transition hover:text-[#e0e3e3] cursor-pointer"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition hover:text-foreground cursor-pointer"
                       type="button"
                       aria-label="Mostrar contrasena"
                       onClick={() => setShowPassword((prev) => !prev)}
@@ -111,10 +111,10 @@ export const InicioSesionPage = () => {
 
                 <div className="pt-1 sm:pt-2">
                   <button
-                    className="group relative flex w-full items-center justify-center rounded bg-[#01696f] py-2.5 text-sm sm:text-base font-medium text-[#97e6ec] transition hover:bg-[#01838a]"
+                    className="group relative flex w-full items-center justify-center rounded bg-accent py-2.5 text-sm sm:text-base font-medium text-accent-foreground transition hover:bg-accent/90 cursor-pointer"
                     type="submit"
                   >
-                    <span className="relative z-10 flex items-center gap-2 cursor-pointer">
+                    <span className="relative z-10 flex items-center gap-2 ">
                       Iniciar sesion
                       {loading && (
                              <span className="material-symbols-outlined text-base sm:text-lg opacity-60 animate-spin">
@@ -126,8 +126,8 @@ export const InicioSesionPage = () => {
                 </div>
               </form>
 
-              <div className="mt-6 sm:mt-8 border-t border-[#3f4949]/40 pt-3 sm:pt-4 text-center">
-                <div className="flex items-center justify-center gap-2 text-[0.6rem] sm:text-xs uppercase tracking-[0.28em] text-[#889393]">
+              <div className="mt-6 sm:mt-8 border-t border-border/40 pt-3 sm:pt-4 text-center">
+                <div className="flex items-center justify-center gap-2 text-[0.6rem] sm:text-xs uppercase tracking-[0.28em] text-muted-foreground">
                   <span className="material-symbols-outlined text-xs sm:text-sm">warning</span>
                   Solo personal autorizado puede acceder.
                 </div>

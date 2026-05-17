@@ -4,27 +4,25 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
   SidebarSeparator,
-  SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { NavLink, useLocation } from "react-router-dom"
 import logo from "@/assets/logo_sistema_seguridad_perimetral_v4.svg"
-import { ProfileMenu } from "../ui"
+import { ProfileMenu } from "../../ui"
 
 const itemStyles =
   `text-sidebar-foreground/70 
-  hover:bg-emerald-500/10 
-  hover:text-emerald-300 
-  data-active:bg-emerald-500/15 
-  data-active:text-emerald-300 
+  hover:bg-primary/10 
+  hover:text-primary 
+  data-active:bg-primary/15 
+  data-active:text-primary 
   data-active:ring-1 
-  data-active:ring-emerald-500/40
+  data-active:ring-primary/40
   group-data-[collapsible=icon]:justify-center
   `
 
@@ -52,8 +50,8 @@ export const AppSidebar = () => {
           <span className="text-xs uppercase tracking-wide text-sidebar-foreground/60">
             Security Admin
           </span>
-          <div className="flex items-center gap-2 text-xs text-emerald-400">
-            <span className="size-2 rounded-full bg-emerald-400" />
+          <div className="flex items-center gap-2 text-xs text-success">
+            <span className="size-2 rounded-full bg-success" />
             <span>System Status: MQTT Online</span>
           </div>
         </div>
