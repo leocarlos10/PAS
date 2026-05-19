@@ -55,6 +55,10 @@ public class MqttDataService {
                 log.warn("MQTT ignorado: zona no encontrada. zonaKey='{}' topic='{}'", topicData.zonaKey(), topic);
                 return null;
             }
+            if (Boolean.FALSE.equals(zona.getActiva())) {
+                log.info("MQTT ignorado: zona desactivada. zona='{}' topic='{}'", zona.getNombre(), topic);
+                return null;
+            }
 
             JsonNode json = safeReadTree(payload);
             String sensorCodigo = firstNonBlank(

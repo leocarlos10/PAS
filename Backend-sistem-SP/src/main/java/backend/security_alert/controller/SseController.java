@@ -15,9 +15,21 @@ public class SseController {
 
     private final SseManager sseManager;
 
+    /**
+     * Endpoint SSE (Server-Sent Events) para que el frontend se suscriba a eventos en tiempo real.
+     *
+     * <p>Cómo funciona:
+     * <ul>
+     *   <li>El cliente hace {@code GET /api/sse/jardin} y deja la conexión HTTP abierta.</li>
+     *   <li>El backend registra al cliente en {@link SseManager} (lista en memoria).</li>
+     *   <li>Cuando llega un evento (por ejemplo desde MQTT), el backend llama
+     *   {@code sseManager.enviarEvento(...)} y el cliente lo recibe al instante.</li>
+     * </ul>
+     *
+     * <p>Nota: SSE es un canal servidor → cliente (no bidireccional).
+     */
     @GetMapping(path = "/jardin", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribeJardin() {
         return sseManager.crearEmitter();
     }
 }
-

@@ -26,9 +26,4 @@ public class EventoController {
         return eventoService.obtenerHistorialPaginado(page, size, zonaId, severidad);
     }
 
-    @PostMapping
-    public ResponseEntity<Long> recibirEvento(@RequestBody EventoRequestDTO request) {
-        Evento evento = eventoService.procesarEventoDesdeDispositivo(request);
-        return ResponseEntity.ok(evento.getId());
-    }
 }
