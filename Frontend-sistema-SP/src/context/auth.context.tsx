@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { type LoginResponse } from "@/types";
 import { useNavigate } from "react-router-dom";
+import { getSecureItem } from "@/utils";
 
 
 type AuthContextValue = {
@@ -17,16 +18,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
  * @returns LoginResponse o null si no hay datos o si ocurre un error al parsear
  */
 function readStoredAuth(): LoginResponse | null {
-	const rawAuth = localStorage.getItem("auth");
-	if (!rawAuth) {
-		return null;
-	}
-
-	try {
-		return JSON.parse(rawAuth) as LoginResponse;
-	} catch {
-		return null;
-	}
+	return getSecureItem<LoginResponse>("auth");
 }
 
 /**
@@ -34,7 +26,7 @@ function readStoredAuth(): LoginResponse | null {
  * @returns token o null si no hay token.
  */
 function readStoredToken(): string | null {
-	return localStorage.getItem("token");
+	return getSecureItem("token");
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {

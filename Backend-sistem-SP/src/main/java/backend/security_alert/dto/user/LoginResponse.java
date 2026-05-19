@@ -16,6 +16,7 @@ public class LoginResponse {
 
     // private String nombre;
 
+    private Long id;
     private String username;
     private List<String> roles;
 

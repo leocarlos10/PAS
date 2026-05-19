@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { NavLink } from "react-router-dom";
 import { Button } from "./button";
 import { useAuthContext } from "@/context/auth.context";
 
 export const ProfileMenu = () => {
     const [open, setOpen] = useState<boolean>(false);
     const containerRef = useRef<HTMLDivElement | null>(null);
-    const {logout} = useAuthContext();
+    const {logout, auth} = useAuthContext();
+    const isAdmin = auth?.roles?.includes("ROLE_ADMIN") || auth?.roles?.includes("ADMIN");
 
     useEffect(()=> {
 
@@ -55,9 +55,13 @@ export const ProfileMenu = () => {
                     <span className="material-symbols-outlined">person</span>
                 </div>
                 <div className="flex min-w-0 flex-1 flex-col group-data-[collapsible=icon]:hidden">
-                    <span className="truncate text-sm font-medium">Admin Seguridad</span>
-                    <span className="truncate text-xs text-sidebar-foreground/60">
-                        admin@sistema.com
+                    <span className="truncate text-sm font-medium">
+                        {
+                            isAdmin ? "Administrador sistema" : "Usuario sistema"
+                        }
+                        </span>
+                    <span className=" flex justify-start truncate text-xs text-sidebar-foreground/60">
+                        {auth?.username}
                     </span>
                 </div>
             </button>
@@ -65,16 +69,16 @@ export const ProfileMenu = () => {
             {/* Menú dropdown */}
             {open && (
                 <div className="absolute bottom-full left-0 right-0 mb-2 bg-sidebar border border-sidebar-border rounded-lg shadow-lg z-50 overflow-hidden">
-                    <a href="#configuracion" className="flex items-center gap-3 px-4 py-2.5 text-sm text-sidebar-foreground hover:bg-emerald-500/15 hover:text-emerald-300 transition-colors">
+                    <a href="#configuracion" className="flex items-center gap-3 px-4 py-2.5 text-sm text-sidebar-foreground hover:bg-primary/15 hover:text-primary transition-colors">
                         <span className="material-symbols-outlined text-base">settings</span>
                         <span>Configuración</span>
                     </a>
                     <div className="border-t border-sidebar-border/50"></div>
-                    <div className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition-colors">
+                    <div className="flex items-center gap-3 px-4 py-2.5 text-sm text-danger hover:bg-danger/10 transition-colors">
                         <span className="material-symbols-outlined text-base">logout</span>
                         <Button
                             variant="ghost"
-                            className="p-0 text-red-400 bg-transparent hover:bg-transparent shadow-none cursor-pointer"
+                            className="p-0 text-danger bg-transparent hover:bg-transparent shadow-none cursor-pointer"
                             onClick={logout}
                         >
                             Cerrar sesión
