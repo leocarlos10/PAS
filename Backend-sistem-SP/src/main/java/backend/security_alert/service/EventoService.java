@@ -64,7 +64,6 @@ public class EventoService {
         evento.setSensor(sensor);
         evento.setTipoEvento(dto.getTipoEvento());
         evento.setDescripcion(dto.getDescripcion());
-        evento.setSeveridad(dto.getSeveridad());
         evento.setFechaHora(LocalDateTime.now());
 
         Evento guardado = eventoRepository.save(evento);
@@ -85,7 +84,7 @@ public class EventoService {
         dto.setSensorNombre(evento.getSensor() != null ? evento.getSensor().getTipoSensor() : null);
         dto.setTipoEvento(evento.getTipoEvento());
         dto.setDescripcion(evento.getDescripcion());
-        dto.setSeveridad(evento.getSeveridad());
+        dto.setSeveridad(null);
         return dto;
     }
 }
