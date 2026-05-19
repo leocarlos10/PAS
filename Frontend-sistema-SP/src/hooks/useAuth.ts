@@ -2,39 +2,38 @@ import { useState } from "react";
 import { LoginUser } from "@/api/usuarios.api";
 import { type LoginRequest, type LoginResponse, type Response } from "@/types";
 import { setSecureItem } from "@/utils";
+import { useAuthContext } from "@/context/auth.context";
 
 type LoginResult = Response<LoginResponse> | null;
 
 export function useAuth() {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const { refreshFromStorage } = useAuthContext();
 
 	const login = async (loginRequest: LoginRequest): Promise<LoginResult> => {
 		setLoading(true);
 		setError(null);
 
 		try {
-            /* 
-            1 llamamos al api par el login
-            2 obtenemos la data de la respuesta
-            3 validamos si existe un accessToken si es asi se guardan los datos 
-            en el localStorage cifrados, si no se muestra un error de respuesta invalida
-
-            */
 			const response = await LoginUser(loginRequest);
-			const authData = response.data;
-			if (!authData?.access_token) {
-				setError("Respuesta de login invalida");
-				return null;
+			
+			// Validar si fue login exitoso (2XX)
+			if (response.responseCode === 200 && response.data?.access_token) {
+				// Guardar los datos cifrados en localStorage
+				setSecureItem("token", response.data.access_token);
+				setSecureItem("auth", response.data);
+				refreshFromStorage();
+			} else {
+				// Capturar el error pero retornar la respuesta completa
+				setError(response.responseMessage || "Error en login");
 			}
 
-            // guardamos los datos cifrados en localStorage
-			setSecureItem("token", authData.access_token);
-			setSecureItem("auth", authData);
-
+			// SIEMPRE retornar la respuesta completa (incluyendo errores)
 			return response;
 		} catch (err) {
 			setError("Error en login");
+			// Retornar una respuesta nula en caso de error de conexión
 			return null;
 		} finally {
 			setLoading(false);

@@ -1,6 +1,8 @@
 package backend.security_alert.dto.user;
 
+import backend.security_alert.models.enums.UserRol;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,4 +30,7 @@ public class RegisterRequest {
     @NotBlank
     @Size(max = 100)
     private String password;
+
+    @NotNull
+    private UserRol role;
 }

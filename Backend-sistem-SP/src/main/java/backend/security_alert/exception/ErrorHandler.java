@@ -76,7 +76,18 @@ public class ErrorHandler {
                 HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(BadRequestCustomException.class)
+    @ExceptionHandler(UserInactiveException.class)
+    public ResponseEntity<Response<Object>> handleUserInactiveException(
+            UserInactiveException ex) {
+        List<String> errors = Collections.singletonList(ex.getMessage());
+
+        return new ResponseEntity<>(
+                mappingError(
+                        HttpStatus.FORBIDDEN.value(),
+                        HttpStatus.FORBIDDEN.getReasonPhrase(),
+                        errors),
+                HttpStatus.FORBIDDEN);
+    }
     public ResponseEntity<Response<Object>> handleBadRequestCustomException(
             BadRequestCustomException ex) {
         List<String> errors = Collections.singletonList(ex.getMessage());

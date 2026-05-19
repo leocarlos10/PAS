@@ -9,6 +9,7 @@ import backend.security_alert.dto.user.RegisterRequest;
 import backend.security_alert.dto.user.RegisterResponse;
 import backend.security_alert.exception.DataExistException;
 import backend.security_alert.exception.NotFoundException;
+import backend.security_alert.exception.UserInactiveException;
 import backend.security_alert.models.User;
 import backend.security_alert.models.enums.UserRol;
 import backend.security_alert.repository.UserRepository;
@@ -54,10 +55,10 @@ public class UserService {
         User user = new User();
         user.setUsername(request.getUsername());
         user.setPassword(hashedPassword);
-        user.setUser_rol(UserRol.USUARIO);
+        user.setUser_rol(request.getRole());
         user.setName(request.getName());
         user.setPhone(request.getPhone());
-        user.setActive(false);
+        user.setActive(true);
 
         try {
             userRepository.save(user);
@@ -82,10 +83,14 @@ public class UserService {
         LoginRequest request,
         HttpServletResponse response
     ) {
-        userRepository.findByUsername(request.getUsername())
+        User user = userRepository.findByUsername(request.getUsername())
             .orElseThrow(() ->
                 new NotFoundException("User not found. Please register first")
             );
+
+        if (!Boolean.TRUE.equals(user.getActive())) {
+            throw new UserInactiveException("User account is inactive. Please contact an administrator.");
+        }
 
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
@@ -105,6 +110,7 @@ public class UserService {
             .toList();
 
         LoginResponse loginResponse = LoginResponse.builder()
+            .id(userDetails.getId())
             .username(userDetails.getUsername())
             .roles(roles)
             .accessToken(jwt)
