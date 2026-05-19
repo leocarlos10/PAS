@@ -1,7 +1,7 @@
 
 import {API_URL} from "../../Config";
 import { getHeaders } from "@/utils";
-import { type AdminUserResponse, type LoginRequest, type LoginResponse, type RegisterRequest, type RegisterResponse, type Response } from "@/types";
+import { type AdminUserResponse, type LoginRequest, type LoginResponse, type RegisterRequest, type RegisterResponse, type Response, type UpdateUserRequest } from "@/types";
 import { ApiRequest } from "./helpers/ApiRequest";
 
 export async function LoginUser(loginRequest: LoginRequest): Promise<Response<LoginResponse>> {
@@ -31,5 +31,27 @@ export async function GetAllUsersApi(token: string): Promise<Response<AdminUserR
         method: 'GET',
         headers: getHeaders(token),
     });
+    return response;
+}
+
+export async function UpdateUserApi(userId: number, updateData: Partial<UpdateUserRequest>, token: string): Promise<Response<Partial<UpdateUserRequest>>> {
+
+    const response = await ApiRequest<UpdateUserRequest, Partial<UpdateUserRequest>>(`${API_URL}/admin/users/${userId}`, {
+        method: 'PATCH',
+        headers: getHeaders(token),
+        body: updateData
+    });
+
+    return response;
+
+}
+
+export async function ChangeUserStatusApi(userId: number, active: boolean, token: string): Promise<Response<AdminUserResponse>> {
+    const response = await ApiRequest<AdminUserResponse, { active: boolean }>(`${API_URL}/admin/users/${userId}/status`, {
+        method: 'PUT',
+        headers: getHeaders(token),
+        body: { active }
+    });
+
     return response;
 }

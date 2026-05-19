@@ -4,38 +4,66 @@ import type { LoginRequest } from "@/types";
 import { useState } from "react";
 import type { SubmitEvent } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export const InicioSesionPage = () => {
 
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const navigate = useNavigate();
   const {login, loading} = useAuth();
 
   const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
-    // Obtenemos los datos del formulario
-    const formData = new FormData(e.currentTarget);
-    const username = formData.get("username") as string;
-    const password = formData.get("password") as string;
+    try {
+      // Obtenemos los datos del formulario
+      const formData = new FormData(e.currentTarget);
+      const username = formData.get("username") as string;
+      const password = formData.get("password") as string;
 
-    // Validamos que los campos no estén vacíos
-    if (!username.trim() || !password.trim()) {
-      alert("Por favor completa todos los campos");
-      return;
+      // Validamos que los campos no estén vacíos
+      if (!username.trim() || !password.trim()) {
+        toast.warning("Por favor completa todos los campos");
+        return;
+      }
+
+      // ejecutamos el login con los datos del formulario
+      const loginRequest = await login({ username, password } as LoginRequest);
+
+      // Si es null, fue un error de conexión (ya manejado en useAuth)
+      if (!loginRequest) {
+        return;
+      }
+
+      // Si fue exitoso (200)
+      if(loginRequest.responseCode === 200){
+        toast.success(`${loginRequest.responseMessage}, bienvenido ${loginRequest.data?.username}`);
+        navigate("/admin");
+      } else {
+        console.error(loginRequest?.errorList, "Error en login");
+        
+        // Usar códigos HTTP para identificar el tipo de error
+        if (loginRequest.responseCode === 403) {
+          toast.warning("Tu cuenta ha sido desactivada. Por favor, contacta al administrador del sistema.");
+        } else if (loginRequest.responseCode === 404) {
+          toast.error("Usuario o contraseña incorrectos.");
+        } else {
+          // Extraer el mensaje de error de forma segura
+          const errorItem = loginRequest?.errorList?.[0];
+          const loginError = typeof errorItem === "string" 
+            ? errorItem 
+            : errorItem?.message || "Error al iniciar sesión. Intenta nuevamente.";
+          toast.error(loginError);
+        }
+      }
+    } catch (error) {
+      console.error("Error inesperado en login:", error);
+      toast.error("Error inesperado. Por favor intenta nuevamente.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    // ejecutamos el login con los datos del formulario
-    const loginRequest = await login({ username, password } as LoginRequest);
-
-    if(loginRequest && loginRequest.responseCode == 200){
-      alert(`${loginRequest.responseMessage}, bienvenido ${loginRequest.data?.username}`);
-      navigate("/admin");
-    } else {
-     console.error(loginRequest?.errorList, "Error en login");
-     alert( `No se pudo iniciar sesion ${loginRequest?.errorList[0]?.message}` || "Error en login" );
-    }
-
   }
 
   return (
@@ -111,12 +139,13 @@ export const InicioSesionPage = () => {
 
                 <div className="pt-1 sm:pt-2">
                   <button
-                    className="group relative flex w-full items-center justify-center rounded bg-accent py-2.5 text-sm sm:text-base font-medium text-accent-foreground transition hover:bg-accent/90 cursor-pointer"
+                    className="group relative flex w-full items-center justify-center rounded bg-accent py-2.5 text-sm sm:text-base font-medium text-accent-foreground transition hover:bg-accent/90 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     type="submit"
+                    disabled={loading || isSubmitting}
                   >
                     <span className="relative z-10 flex items-center gap-2 ">
                       Iniciar sesion
-                      {loading && (
+                      {(loading || isSubmitting) && (
                              <span className="material-symbols-outlined text-base sm:text-lg opacity-60 animate-spin">
                         progress_activity
                       </span>

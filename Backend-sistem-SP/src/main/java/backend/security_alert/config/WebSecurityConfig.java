@@ -94,7 +94,7 @@ public class WebSecurityConfig {
         configuration.setAllowedOrigins(
                 Arrays.asList(allowedOrigins.split(",")));
         configuration.setAllowedMethods(
-                Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                Arrays.asList("GET", "POST", "PUT","PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(
                 Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);

@@ -3,6 +3,7 @@
 import { useUser } from "@/hooks/useUser";
 import type { rol } from "@/types/requestType/usuario/RegisterRequest";
 import type { SubmitEvent } from "react"
+import { toast } from "sonner";
 
 type FormCreateUserProps = {
     onClose: () => void;
@@ -24,18 +25,18 @@ export const FormCreateUser = ({ onClose, onSuccess }: FormCreateUserProps) => {
         const role = (formData.get("role") as rol) || ""
 
         if (!username.trim() || !name.trim() || !phone.trim() || !password.trim() || !role.trim()) {
-            alert("Por favor completa todos los campos")
+            toast.warning("Por favor completa todos los campos")
             return
         }
 
         const response = await CreateUser({ username, name, phone, password, role });
 
         if (response && response.responseCode === 201) {
-            alert("Usuario creado exitosamente");
+            toast.success("Usuario creado exitosamente");
         }else if(response && response.responseCode === 403){
-            alert("Acceso denegado: no tienes permisos para crear usuarios");
+            toast.error("Acceso denegado: no tienes permisos para crear usuarios");
         }else{
-            alert("Tenemos un error al crear el usuario, por favor intenta mas tarde");
+            toast.error("Tenemos un error al crear el usuario, por favor intenta mas tarde");
             console.error("Error al crear usuario:", response?.errorList);
         }
 
