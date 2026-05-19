@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -31,6 +32,7 @@ public class MqttDataService {
     private final EventoRepository eventoRepository;
     private final SseManager sseManager;
 
+    @Transactional
     public void procesarMensaje(String topic, String payload) {
         Evento evento = persistirEvento(topic, payload);
         if (evento != null) {
@@ -76,27 +78,24 @@ public class MqttDataService {
                 return null;
             }
 
-            final String sensorCodigoFinal = sensorCodigo;
-            final String tipoSensorFinal = tipoSensor;
-
-            Sensor sensor = sensorRepository.findByCodigo(sensorCodigo)
-                    .orElseGet(() -> {
-                        Sensor nuevo = new Sensor();
-                        nuevo.setZona(zona);
-                        nuevo.setCodigo(sensorCodigoFinal);
-                        nuevo.setTipoSensor(tipoSensorFinal != null ? tipoSensorFinal : "generico");
-                        nuevo.setActivo(true);
-                        return sensorRepository.save(nuevo);
-                    });
-
-            if (tipoSensor != null && (sensor.getTipoSensor() == null || sensor.getTipoSensor().isBlank()
-                    || "generico".equalsIgnoreCase(sensor.getTipoSensor()))) {
-                sensor.setTipoSensor(tipoSensor);
+            // Tabla de sensores fija: NO crear sensores automáticamente.
+            // Si existe el sensor, se actualiza su estadoActual/ultimoReporte.
+            Sensor sensor = sensorRepository.findByCodigo(sensorCodigo).orElse(null);
+            if (sensor == null) {
+                log.warn("Sensor no encontrado (no se crea). codigo='{}' topic='{}' payload='{}'",
+                        sensorCodigo, topic, payload);
+            } else {
+                if (sensor.getZona() != null && zona.getId() != null && !zona.getId().equals(sensor.getZona().getId())) {
+                    log.warn("Sensor pertenece a otra zona. codigo='{}' zonaTopic='{}' zonaSensor='{}'",
+                            sensorCodigo, zona.getNombre(), sensor.getZona().getNombre());
+                }
+                // Preferir la zona del sensor (fuente de verdad) si está definida
+                if (sensor.getZona() != null) {
+                    zona = sensor.getZona();
+                }
+                sensor.setUltimoReporte(LocalDateTime.now());
+                sensorRepository.save(sensor);
             }
-
-            sensor.setEstadoActual(payload);
-            sensor.setUltimoReporte(LocalDateTime.now());
-            sensorRepository.save(sensor);
 
             Evento evento = new Evento();
             evento.setZona(zona);
