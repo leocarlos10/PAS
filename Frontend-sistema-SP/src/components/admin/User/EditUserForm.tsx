@@ -4,6 +4,7 @@ import type { SubmitEvent } from "react"
 import { UpdateUserApi } from "@/api/usuarios.api"
 import { useAuthContext } from "@/context/auth.context"
 import { toast } from "sonner"
+import { handleApiError, getErrorToastType } from "@/utils/apiErrorHandler"
 
 type Props = {
   user: AdminUserResponse
@@ -35,19 +36,23 @@ export const EditUserForm = ({ user, onClose, onSaved }: Props) => {
 
       const updated = await UpdateUserApi(user.id, { name, username, phone }, token) as Response<Partial<UpdateUserRequest>>
 
-      if (updated && updated.responseCode === 200) {
-        toast.success("Usuario actualizado correctamente.")
-         onSaved?.(updated.data);
-         onClose()
+      // Usar el handler centralizado
+      const result = handleApiError(updated)
+      
+      if (result.success && updated.data) {
+        toast.success(result.message)
+        onSaved?.(updated.data)
+        onClose()
       } else {
-        toast.error("Error al guardar los cambios.")
-        console.error("Error al actualizar usuario:", updated?.errorList);
-        onClose();
+        const toastType = getErrorToastType(result.statusCode)
+        toast[toastType](result.message)
+        console.error(`Error al actualizar usuario [${result.statusCode}]:`, result.message)
       }
 
      
     } catch (err: any) {
       console.error(err?.message ?? "Error al guardar")
+      toast.error("Error al guardar los cambios")
     } finally {
       setSaving(false)
     }

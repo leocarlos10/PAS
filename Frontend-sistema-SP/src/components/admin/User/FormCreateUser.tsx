@@ -4,6 +4,7 @@ import { useUser } from "@/hooks/useUser";
 import type { rol } from "@/types/requestType/usuario/RegisterRequest";
 import type { SubmitEvent } from "react"
 import { toast } from "sonner";
+import { handleApiError, getErrorToastType } from "@/utils/apiErrorHandler";
 
 type FormCreateUserProps = {
     onClose: () => void;
@@ -31,19 +32,18 @@ export const FormCreateUser = ({ onClose, onSuccess }: FormCreateUserProps) => {
 
         const response = await CreateUser({ username, name, phone, password, role });
 
-        if (response && response.responseCode === 201) {
-            toast.success("Usuario creado exitosamente");
-        }else if(response && response.responseCode === 403){
-            toast.error("Acceso denegado: no tienes permisos para crear usuarios");
-        }else{
-            toast.error("Tenemos un error al crear el usuario, por favor intenta mas tarde");
-            console.error("Error al crear usuario:", response?.errorList);
-        }
+        // Usar el handler centralizado
+        const result = handleApiError(response);
 
-        // Si la creación fue exitosa, llamamos a onSuccess para recargar la lista de usuarios en el padre.
-        onSuccess && onSuccess();
-        // luego cerramos el modal
-        onClose();
+        if (result.success) {
+            toast.success(result.message);
+            onSuccess?.();
+            onClose();
+        } else {
+            const toastType = getErrorToastType(result.statusCode);
+            toast[toastType](result.message);
+            console.error(`Error al crear usuario [${result.statusCode}]:`, result.message);
+        }
     }
 
     return (

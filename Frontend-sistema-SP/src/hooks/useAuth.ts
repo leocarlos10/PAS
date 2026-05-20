@@ -3,6 +3,7 @@ import { LoginUser } from "@/api/usuarios.api";
 import { type LoginRequest, type LoginResponse, type Response } from "@/types";
 import { setSecureItem } from "@/utils";
 import { useAuthContext } from "@/context/auth.context";
+import { handleApiError } from "@/utils/apiErrorHandler";
 
 type LoginResult = Response<LoginResponse> | null;
 
@@ -18,15 +19,15 @@ export function useAuth() {
 		try {
 			const response = await LoginUser(loginRequest);
 			
-			// Validar si fue login exitoso (2XX)
-			if (response.responseCode === 200 && response.data?.access_token) {
+			// Usar el handler centralizado para validar errores
+			const result = handleApiError(response);
+			if (!result.success) {
+				setError(result.message);
+			} else if (response.data?.access_token) {
 				// Guardar los datos cifrados en localStorage
 				setSecureItem("token", response.data.access_token);
 				setSecureItem("auth", response.data);
 				refreshFromStorage();
-			} else {
-				// Capturar el error pero retornar la respuesta completa
-				setError(response.responseMessage || "Error en login");
 			}
 
 			// SIEMPRE retornar la respuesta completa (incluyendo errores)
