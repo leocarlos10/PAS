@@ -5,6 +5,7 @@ import { useState } from "react"
 import { EditUserForm } from "./EditUserForm"
 import { toast } from "sonner"
 import { ChangeUserStatusApi } from "@/api/usuarios.api"
+import { handleApiError, getErrorToastType } from "@/utils/apiErrorHandler"
 
 type UserCardProps = {
   user: AdminUserResponse
@@ -39,13 +40,16 @@ export const UserCard = ({ user }: UserCardProps) => {
 
       const response = await ChangeUserStatusApi(currentUser.id, newStatus, token)
       
-      if (response && response.responseCode === 200 && response.data) {
+      // Usar el handler centralizado
+      const result = handleApiError(response)
+      
+      if (result.success && response.data) {
         setCurrentUser(response.data)
         const statusText = newStatus ? "Activo" : "Inactivo"
         toast.success(`Usuario ${statusText} correctamente`)
       } else {
-        const errorMsg = response?.errorList?.[0]?.message || "No se pudo cambiar el estado"
-        toast.error(`Error: ${errorMsg}`)
+        const toastType = getErrorToastType(result.statusCode)
+        toast[toastType](result.message)
       }
     } catch (error) {
       console.error("Error al cambiar estado del usuario:", error)

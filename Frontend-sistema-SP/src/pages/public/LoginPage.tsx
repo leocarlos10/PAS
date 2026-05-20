@@ -1,6 +1,7 @@
 import logo from "@/assets/logo_sistema_seguridad_perimetral_v3.svg"
 import { useAuth } from "@/hooks";
 import type { LoginRequest } from "@/types";
+import { handleApiError, getErrorToastType } from "@/utils/apiErrorHandler";
 import { useState } from "react";
 import type { SubmitEvent } from "react";
 import { useNavigate } from "react-router-dom";
@@ -11,7 +12,7 @@ export const InicioSesionPage = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const navigate = useNavigate();
-  const {login, loading} = useAuth();
+  const { login, loading } = useAuth();
 
   const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -37,26 +38,22 @@ export const InicioSesionPage = () => {
         return;
       }
 
-      // Si fue exitoso (200)
-      if(loginRequest.responseCode === 200){
-        toast.success(`${loginRequest.responseMessage}, bienvenido ${loginRequest.data?.username}`);
+      // Usar el handler centralizado para validar la respuesta
+      const result = handleApiError(loginRequest);
+      
+      if (result.success) {
+        // Si fue exitoso (200)
+        toast.success(`${result.message}, bienvenido ${loginRequest.data?.username}`);
         navigate("/admin");
       } else {
-        console.error(loginRequest?.errorList, "Error en login");
-        
-        // Usar códigos HTTP para identificar el tipo de error
-        if (loginRequest.responseCode === 403) {
-          toast.warning("Tu cuenta ha sido desactivada. Por favor, contacta al administrador del sistema.");
-        } else if (loginRequest.responseCode === 404) {
-          toast.error("Usuario o contraseña incorrectos.");
+        // Error: mostrar mensaje apropiado con el tipo correcto de toast
+        const toastType = getErrorToastType(result.statusCode);
+        if (toastType === "warning") {
+          toast.warning(result.message);
         } else {
-          // Extraer el mensaje de error de forma segura
-          const errorItem = loginRequest?.errorList?.[0];
-          const loginError = typeof errorItem === "string" 
-            ? errorItem 
-            : errorItem?.message || "Error al iniciar sesión. Intenta nuevamente.";
-          toast.error(loginError);
+          toast.error(result.message);
         }
+        console.error(`Login error [${result.statusCode}]:`, result.message);
       }
     } catch (error) {
       console.error("Error inesperado en login:", error);
@@ -88,7 +85,7 @@ export const InicioSesionPage = () => {
               </div>
 
               <form className="space-y-3 sm:space-y-4"
-                    onSubmit={handleSubmit}
+                onSubmit={handleSubmit}
               >
                 <div>
                   <label className="sr-only" htmlFor="username">
@@ -146,9 +143,9 @@ export const InicioSesionPage = () => {
                     <span className="relative z-10 flex items-center gap-2 ">
                       Iniciar sesion
                       {(loading || isSubmitting) && (
-                             <span className="material-symbols-outlined text-base sm:text-lg opacity-60 animate-spin">
-                        progress_activity
-                      </span>
+                        <span className="material-symbols-outlined text-base sm:text-lg opacity-60 animate-spin">
+                          progress_activity
+                        </span>
                       )}
                     </span>
                   </button>
