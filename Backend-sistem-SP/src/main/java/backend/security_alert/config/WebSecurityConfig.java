@@ -67,7 +67,7 @@ public class WebSecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/v1/auth/**", "/error").permitAll()
+                .requestMatchers("/api/v1/auth/login", "/error").permitAll()
                 .requestMatchers("/api/sse/**").permitAll()
                 .requestMatchers("/swagger-ui.html", 
                                  "/swagger-ui/**", 
@@ -95,7 +95,7 @@ public class WebSecurityConfig {
         configuration.setAllowedOrigins(
                 Arrays.asList(allowedOrigins.split(",")));
         configuration.setAllowedMethods(
-                Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                Arrays.asList("GET", "POST", "PUT","PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(
                 Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);

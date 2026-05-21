@@ -8,7 +8,7 @@ export type Response<T> = {
     responseCode: number;
     responseMessage: string;
     data?: T;
-    errorList?: ValidationError[];
+    errorList?: Array<string | ValidationError>;
     pageNumber?: number;
     pageSize?: number;
     totalPages?: number;

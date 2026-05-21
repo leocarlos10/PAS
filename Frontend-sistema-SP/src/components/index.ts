@@ -1,2 +1,2 @@
-export * from "./admin"
+export * from "./admin/Layout"
 export * from "./ui"

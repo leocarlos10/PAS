@@ -35,7 +35,11 @@ export const decryptData = <T = any>(encryptedData: string): T | null => {
       return null;
     }
 
-    return JSON.parse(jsonString) as T;
+    try {
+      return JSON.parse(jsonString) as T;
+    } catch {
+      return jsonString as unknown as T;
+    }
   } catch (error) {
     console.error("❌ Error al descifrar datos:", error);
     return null;
