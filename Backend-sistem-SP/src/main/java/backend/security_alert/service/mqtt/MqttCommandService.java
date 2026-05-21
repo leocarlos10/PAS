@@ -20,25 +20,26 @@ import java.util.UUID;
 @Slf4j
 public class MqttCommandService {
 
-    private static final String DEFAULT_COMANDO_TOPIC = "jardin/comandos";
-
     private final MqttProperties mqttProperties;
     private final ObjectMapper objectMapper;
 
     private volatile MqttClient client;
 
-    public void publicarComandoZona(String topic, String zonaNombre, boolean activa) {
-        String finalTopic = (topic == null || topic.isBlank()) ? DEFAULT_COMANDO_TOPIC : topic;
-        ZonaActivaCommand payload = new ZonaActivaCommand(zonaNombre, activa);
+    public void publicarComando(String topicComando, String accion) {
+        if (topicComando == null || topicComando.isBlank()) {
+            log.warn("No se publicó comando MQTT: topicComando vacío. accion={}", accion);
+            return;
+        }
+        ComandoPayload payload = new ComandoPayload(accion);
         try {
             ensureConnected();
             byte[] bytes = objectMapper.writeValueAsBytes(payload);
             MqttMessage message = new MqttMessage(bytes);
             message.setQos(1);
-            client.publish(finalTopic, message);
-            log.info("MQTT comando publicado. topic='{}' payload='{}'", finalTopic, new String(bytes, StandardCharsets.UTF_8));
+            client.publish(topicComando, message);
+            log.info("MQTT comando publicado. topic='{}' payload='{}'", topicComando, new String(bytes, StandardCharsets.UTF_8));
         } catch (Exception e) {
-            log.error("Error publicando comando MQTT. topic='{}' zona='{}' activa={}", finalTopic, zonaNombre, activa, e);
+            log.error("Error publicando comando MQTT. topic='{}' accion={}", topicComando, accion, e);
         }
     }
 
@@ -75,7 +76,6 @@ public class MqttCommandService {
         }
     }
 
-    public record ZonaActivaCommand(String zona, boolean activa) {
+    public record ComandoPayload(String accion) {
     }
 }
-

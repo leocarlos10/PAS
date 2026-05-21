@@ -26,7 +26,8 @@ public class ZonaService {
 
         Dispositivo dispositivo = guardada.getDispositivo();
         String topicComando = (dispositivo != null) ? dispositivo.getTopicComando() : null;
-        mqttCommandService.publicarComandoZona(topicComando, guardada.getNombre(), activa);
+        String accion = activa ? "ARMAR" : "DESARMAR";
+        mqttCommandService.publicarComando(topicComando, accion);
 
         return guardada;
     }
