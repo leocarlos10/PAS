@@ -1,17 +1,16 @@
 package backend.security_alert.service;
 
-import backend.security_alert.dto.zona.SensorResponse;
-import backend.security_alert.dto.zona.ZonaResponse;
 import backend.security_alert.exception.NotFoundException;
 import backend.security_alert.models.Dispositivo;
-import backend.security_alert.models.Sensor;
 import backend.security_alert.models.Zona;
 import backend.security_alert.repository.ZonaRepository;
 import backend.security_alert.service.mqtt.MqttCommandService;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,54 +20,38 @@ public class ZonaService {
     private final MqttCommandService mqttCommandService;
 
     @Transactional(readOnly = true)
-    public List<ZonaResponse> listAll() {
-        return zonaRepository.findAll().stream()
-                .map(this::toZonaResponse)
-                .toList();
+    public List<Zona> listarZonas(Optional<Long> dispositivoId, Optional<Boolean> activa) {
+        if (dispositivoId.isPresent() && activa.isPresent()) {
+            return zonaRepository.findAllByDispositivoIdAndActiva(dispositivoId.get(), activa.get());
+        }
+        if (dispositivoId.isPresent()) {
+            return zonaRepository.findAllByDispositivoId(dispositivoId.get());
+        }
+        if (activa.isPresent()) {
+            return zonaRepository.findAllByActiva(activa.get());
+        }
+        return zonaRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public Zona obtenerZona(Long zonaId) {
+        return zonaRepository.findById(zonaId)
+                .orElseThrow(() -> new NotFoundException("Zona no encontrada: " + zonaId));
     }
 
     @Transactional
-    public ZonaResponse actualizarActiva(Long zonaId, boolean activa) {
+    public Zona actualizarActiva(Long zonaId, boolean activa) {
         Zona zona = zonaRepository.findById(zonaId)
                 .orElseThrow(() -> new NotFoundException("Zona no encontrada: " + zonaId));
 
         zona.setActiva(activa);
-        zona.setEstadoActual(activa ? "ARMADA" : "DESARMADA");
         Zona guardada = zonaRepository.save(zona);
 
         Dispositivo dispositivo = guardada.getDispositivo();
         String topicComando = (dispositivo != null) ? dispositivo.getTopicComando() : null;
-        mqttCommandService.publicarComandoZona(topicComando, guardada.getNombre(), activa);
+        String accion = activa ? "ARMAR" : "DESARMAR";
+        mqttCommandService.publicarComando(topicComando, accion);
 
-        return toZonaResponse(guardada);
-    }
-
-    private ZonaResponse toZonaResponse(Zona zona) {
-        List<SensorResponse> sensores = zona.getSensores().stream()
-                .map(this::toSensorResponse)
-                .toList();
-
-        return ZonaResponse.builder()
-                .id(zona.getId())
-                .nombre(zona.getNombre())
-                .descripcion(zona.getDescripcion())
-                .ubicacion(zona.getUbicacion())
-                .estadoActual(zona.getEstadoActual())
-                .modoControl(zona.getModoControl())
-                .activa(zona.getActiva())
-                .sensores(sensores)
-                .build();
-    }
-
-    private SensorResponse toSensorResponse(Sensor sensor) {
-        return SensorResponse.builder()
-                .id(sensor.getId())
-                .codigo(sensor.getCodigo())
-                .tipoSensor(sensor.getTipoSensor())
-                .ubicacionDetalle(sensor.getUbicacionDetalle())
-                .estadoActual(sensor.getEstadoActual())
-                .ultimoReporte(sensor.getUltimoReporte())
-                .activo(sensor.getActivo())
-                .build();
+        return guardada;
     }
 }

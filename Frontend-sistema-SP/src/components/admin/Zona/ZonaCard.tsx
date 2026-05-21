@@ -117,10 +117,10 @@ export const ZonaCard = ({ zona, index, onZonaUpdated }: ZonaCardProps) => {
             Estado de Sensores
           </h3>
           <div className="space-y-3">
-            {currentZona.sensores.length === 0 && (
+            {(currentZona.sensores ?? []).length === 0 && (
               <p className="text-sm text-muted-foreground">Sin sensores registrados</p>
             )}
-            {currentZona.sensores.map((sensor) => (
+            {(currentZona.sensores ?? []).map((sensor) => (
               <div
                 key={sensor.id}
                 className="flex items-center justify-between rounded-md border border-border/60 bg-card p-3"

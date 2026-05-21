@@ -11,6 +11,9 @@ La esp32 recive los datos del backend atraves del servidor.
 La esp32 debe recivir eso desde el servidor mqtt. 
 
 ```
-jardin/comando {"zona":"Zona 1","activa":true}
+jardin/zona1/comando {"accion":"ARMAR"}
+jardin/zona1/comando {"accion":"DESARMAR"}
+jardin/zona2/comando {"accion":"DESARMAR"}
+jardin/zona2/comando {"accion":"ARMAR"}
 ```
 Y activar o desactivar. las zona de la alarma. 

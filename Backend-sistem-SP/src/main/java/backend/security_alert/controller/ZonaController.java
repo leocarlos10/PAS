@@ -1,58 +1,77 @@
 package backend.security_alert.controller;
 
-import backend.security_alert.dto.common.Response;
-import backend.security_alert.dto.zona.ZonaActivaRequest;
-import backend.security_alert.dto.zona.ZonaResponse;
-import backend.security_alert.exception.BadRequestCustomException;
+import backend.security_alert.models.Zona;
 import backend.security_alert.service.ZonaService;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/v1/zonas")
+@RequestMapping("/api/zonas")
 @RequiredArgsConstructor
 public class ZonaController {
 
     private final ZonaService zonaService;
 
     @GetMapping
-    public ResponseEntity<Response<List<ZonaResponse>>> listAll() {
-        List<ZonaResponse> zonas = zonaService.listAll();
+    public ResponseEntity<List<ZonaResponse>> listar(
+            @RequestParam(required = false) Long dispositivoId,
+            @RequestParam(required = false) Boolean activa) {
 
-        Response<List<ZonaResponse>> response = Response.<List<ZonaResponse>>builder()
-                .responseCode(HttpStatus.OK.value())
-                .responseMessage("SUCCESS")
-                .data(zonas)
-                .build();
+        List<ZonaResponse> zonas = zonaService
+                .listarZonas(Optional.ofNullable(dispositivoId), Optional.ofNullable(activa))
+                .stream()
+                .map(ZonaResponse::from)
+                .toList();
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(zonas);
+    }
+
+    @GetMapping("/{zonaId}")
+    public ResponseEntity<ZonaResponse> obtener(@PathVariable Long zonaId) {
+        return ResponseEntity.ok(ZonaResponse.from(zonaService.obtenerZona(zonaId)));
     }
 
     @PatchMapping("/{zonaId}/activa")
-    public ResponseEntity<Response<ZonaResponse>> actualizarActiva(
+    public ResponseEntity<ZonaActivaResponse> actualizarActiva(
             @PathVariable Long zonaId,
             @RequestBody ZonaActivaRequest request) {
 
-        if (request.getActiva() == null) {
-            throw new BadRequestCustomException("El campo activa es requerido");
+        Zona zona = zonaService.actualizarActiva(zonaId, request.activa());
+        return ResponseEntity.ok(new ZonaActivaResponse(zona.getId(), zona.getNombre(), zona.getActiva()));
+    }
+
+    public record ZonaResponse(
+            Long id,
+            Long dispositivoId,
+            String nombre,
+            String descripcion,
+            String ubicacion,
+            String estadoActual,
+            String modoControl,
+            Boolean activa
+    ) {
+        public static ZonaResponse from(Zona zona) {
+            Long dispositivoId = (zona.getDispositivo() != null) ? zona.getDispositivo().getId() : null;
+            return new ZonaResponse(
+                    zona.getId(),
+                    dispositivoId,
+                    zona.getNombre(),
+                    zona.getDescripcion(),
+                    zona.getUbicacion(),
+                    zona.getEstadoActual(),
+                    zona.getModoControl(),
+                    zona.getActiva()
+            );
         }
+    }
 
-        ZonaResponse zona = zonaService.actualizarActiva(zonaId, request.getActiva());
+    public record ZonaActivaRequest(boolean activa) {
+    }
 
-        Response<ZonaResponse> response = Response.<ZonaResponse>builder()
-                .responseCode(HttpStatus.OK.value())
-                .responseMessage("SUCCESS")
-                .data(zona)
-                .build();
-
-        return ResponseEntity.ok(response);
+    public record ZonaActivaResponse(Long id, String nombre, Boolean activa) {
     }
 }

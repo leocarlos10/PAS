@@ -1,13 +1,26 @@
-import { API_ROOT, API_URL } from "../../Config";
+import { API_ROOT } from "../../Config";
 import { getHeaders } from "@/utils";
 import { ApiRequest } from "./helpers/ApiRequest";
 import type { Response, ZonaActivaRequest, ZonaResponse } from "@/types";
 
 export async function GetAllZonasApi(token: string): Promise<Response<ZonaResponse[]>> {
-    const response = await ApiRequest<ZonaResponse[], void>(`${API_URL}/zonas`, {
+    const response = await ApiRequest<ZonaResponse[], void>(`${API_ROOT}/api/zonas`, {
         method: "GET",
         headers: getHeaders(token),
     });
+
+    const maybeList = response as unknown as ZonaResponse[];
+    if (response.responseCode === undefined && Array.isArray(maybeList)) {
+        return {
+            responseCode: 200,
+            responseMessage: "SUCCESS",
+            data: maybeList.map((zona) => ({
+                ...zona,
+                sensores: zona.sensores ?? [],
+            })),
+            errorList: [],
+        };
+    }
 
     return response;
 }
