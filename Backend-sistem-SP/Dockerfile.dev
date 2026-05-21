@@ -2,7 +2,10 @@ FROM gradle:jdk25-noble
 
 WORKDIR /app
 
-COPY . .
+# Pre-download dependencies into /home/gradle/.gradle (persists; not replaced by /app bind mount).
+COPY build.gradle.kts settings.gradle.kts ./
+COPY src ./src
+RUN gradle dependencies --no-daemon
 
 EXPOSE 8080
 
