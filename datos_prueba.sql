@@ -36,7 +36,7 @@ INSERT INTO zonas (
   id_dispositivo, nombre, descripcion, ubicacion, estado_actual, modo_control, activa
 ) VALUES
 (@dispositivo_id, 'Sector Norte', 'Zona perimetral norte', 'Bloque A', 'ARMADA', 'AUTOMATICO', TRUE),
-(@dispositivo_id, 'Acceso Principal', 'Entrada principal', 'Bloque B', 'DESARMADA', 'MANUAL', TRUE),
+(@dispositivo_id, 'Acceso Principal', 'Entrada principal', 'Bloque B', 'DESARMADA', 'MANUAL', FALSE),
 (@dispositivo_id, 'Laboratorio', 'Area de sensores criticos', 'Bloque C', 'ARMADA', 'AUTOMATICO', TRUE);
 
 SET @zona_norte_id = (SELECT id_zona FROM zonas WHERE nombre = 'Sector Norte' LIMIT 1);

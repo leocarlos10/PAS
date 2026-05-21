@@ -67,8 +67,9 @@ public class WebSecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/v1/auth/login", "/error").permitAll()
-                .requestMatchers("/swagger-ui.html", 
+                .requestMatchers("/api/v1/auth/**", "/error").permitAll()
+                .requestMatchers("/api/sse/**").permitAll()
+                .requestMatchers("/swagger-ui.html",
                                  "/swagger-ui/**", 
                                  "/v3/api-docs/**", 
                                  "/swagger-resources/**", 

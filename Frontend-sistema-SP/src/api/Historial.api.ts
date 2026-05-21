@@ -2,7 +2,7 @@ import type { Response } from "@/types"
 import type { HistorialPageResponse } from "@/types/requestType/evento/HistorialPage"
 import { ApiRequest } from "./helpers/ApiRequest"
 import { getHeaders } from "@/utils"
-import {API_URL} from "../../Config";
+import { API_ROOT } from "../../Config";
 
 
 export async function getPageHistorial(
@@ -17,7 +17,7 @@ export async function getPageHistorial(
     if (zonaId) params.append("zonaId", String(zonaId))
     if (severidad) params.append("severidad", severidad)
     
-    const response = await ApiRequest<HistorialPageResponse, void>(`${API_URL}/eventos/historial?${params.toString()}`, {
+    const response = await ApiRequest<HistorialPageResponse, void>(`${API_ROOT}/api/eventos/historial?${params.toString()}`, {
         method: 'GET',
         headers: getHeaders(token),
     })
