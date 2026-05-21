@@ -38,3 +38,9 @@ The MQTT listener can be configured using environment variables (or `application
 http://localhost:8080/swagger-ui.html
 ```
 for activate visit secrest.example
+
+## Endpoints (Frontend)
+
+- `GET /api/zonas` lista zonas.
+  - Filtros opcionales: `?dispositivoId=<id>` y/o `?activa=true|false`
+- `GET /api/zonas/{zonaId}` obtiene una zona por id.
