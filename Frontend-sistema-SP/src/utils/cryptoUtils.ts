@@ -25,13 +25,36 @@ export const encryptData = (data: any): string => {
  */
 export const decryptData = <T = any>(encryptedData: string): T | null => {
   try {
+    // Compatibilidad con valores legacy/planos en localStorage:
+    // - JSON (objeto/array) guardado sin cifrar
+    // - JWT u otros strings no cifrados
+    const trimmed = encryptedData.trim();
+    if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+      try {
+        return JSON.parse(trimmed) as T;
+      } catch {
+        return trimmed as unknown as T;
+      }
+    }
+
+    // Heurística simple para JWT: header.payload.signature (Base64URL)
+    // Si luce como JWT, no intentamos AES.
+    const jwtParts = trimmed.split(".");
+    if (jwtParts.length === 3 && jwtParts.every((p) => /^[A-Za-z0-9_-]+$/.test(p) && p.length > 0)) {
+      return trimmed as unknown as T;
+    }
+
     const decrypted = CryptoJS.AES.decrypt(encryptedData, secret_key);
-    const jsonString = decrypted.toString(CryptoJS.enc.Utf8);
+    let jsonString: string;
+    try {
+      jsonString = decrypted.toString(CryptoJS.enc.Utf8);
+    } catch (error) {
+      console.warn("⚠️ No se pudo descifrar: salida no es UTF-8 válido (datos corruptos o clave distinta)", error);
+      return null;
+    }
 
     if (!jsonString) {
-      console.error(
-        "❌ Error: No se pudo descifrar los datos (clave incorrecta o datos corruptos)",
-      );
+      console.warn("⚠️ No se pudo descifrar (datos corruptos o clave distinta)");
       return null;
     }
 
@@ -41,7 +64,7 @@ export const decryptData = <T = any>(encryptedData: string): T | null => {
       return jsonString as unknown as T;
     }
   } catch (error) {
-    console.error("❌ Error al descifrar datos:", error);
+    console.warn("⚠️ Error al descifrar datos (datos corruptos o clave distinta):", error);
     return null;
   }
 };
@@ -67,7 +90,12 @@ export const getSecureItem = <T = any>(key: string): T | null => {
     const encrypted = localStorage.getItem(key);
     if (!encrypted) return null;
 
-    return decryptData<T>(encrypted);
+    const value = decryptData<T>(encrypted);
+    if (value === null) {
+      // Evita que el app se quede en un loop de errores si el valor quedó corrupto
+      localStorage.removeItem(key);
+    }
+    return value;
   } catch (error) {
     console.error(`❌ Error al leer ${key} de localStorage:`, error);
     return null;
