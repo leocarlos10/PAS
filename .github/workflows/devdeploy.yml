@@ -2,14 +2,12 @@ name: DevDeploy
 on:
   push:
     branches: [dev]
-
 env:
   REGISTRY: ghcr.io
   IMAGE_FRONT: ghcr.io/${{ secrets.DEV_USER }}/frontend-sp
   IMAGE_BACK: ghcr.io/${{ secrets.DEV_USER }}/backend-sp
-
 jobs:
-    
+
   changes:
     runs-on: ubuntu-latest
     outputs:
@@ -25,7 +23,7 @@ jobs:
               - 'Frontend-sistema-SP/**'
             backend:
               - 'Backend-sistem-SP/**'
-               
+
   build-frontend:
     needs: changes
     if: ${{ needs.changes.outputs.frontend == 'true' }}
@@ -51,7 +49,6 @@ jobs:
             VITE_API_URL=/api/v1
             VITE_CRYPTO_SECRET_KEY=${{ secrets.DEV_VITE_CRYPTO_SECRET_KEY }}
             NGINX_SERVER_NAME=${{ secrets.DEV_NGINX_SERVER_NAME }}
-
 
   build-backend:
     needs: changes
@@ -90,17 +87,16 @@ jobs:
           host: ${{ secrets.DEV_VPS_HOST }}
           username: ${{ secrets.DEV_LINUX_USERNAME }}
           key: ${{ secrets.DEV_VPS_SSH_KEY }}
+          envs: DOCKER_TOKEN,DOCKER_USER        
           script: |
             set -e
             cd /home/ubuntu/app
+            echo "$DOCKER_TOKEN" | docker login ghcr.io -u "$DOCKER_USER" --password-stdin
 
-            echo ${{ secrets.DEV_TOKEN }} | docker login ghcr.io -u ${{ secrets.DEV_USER }} --password-stdin
-            
             if [ "${{ needs.changes.outputs.frontend }}" == "true" ]; then
               docker compose pull frontend
               docker compose up -d --force-recreate --no-deps frontend
             fi
-
             if [ "${{ needs.changes.outputs.backend }}" == "true" ]; then
               docker compose pull backend
               docker compose up -d --force-recreate --no-deps backend
@@ -108,3 +104,6 @@ jobs:
 
             docker logout ghcr.io
             docker image prune -f
+        env:
+          DOCKER_TOKEN: ${{ secrets.DEV_TOKEND }}  
+          DOCKER_USER: ${{ secrets.DEV_USER }}
