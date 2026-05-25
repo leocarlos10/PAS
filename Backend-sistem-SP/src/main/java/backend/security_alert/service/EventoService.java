@@ -18,6 +18,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Service
@@ -30,7 +31,14 @@ public class EventoService {
     private final AlertaService alertaService;
 
     @Transactional(readOnly = true)
-    public Page<EventoHistorialDTO> obtenerHistorialPaginado(int page, int size, Long zonaId, String severidad) {
+    public Page<EventoHistorialDTO> obtenerHistorialPaginado(
+            int page,
+            int size,
+            Long zonaId,
+            String tipoEvento,
+            String sensorCodigo,
+            LocalDate fechaDesde,
+            LocalDate fechaHasta) {
         Specification<Evento> spec = (root, query, cb) -> cb.conjunction();
 
         if (zonaId != null) {
@@ -38,9 +46,26 @@ public class EventoService {
                     cb.equal(root.get("zona").get("id"), zonaId));
         }
 
-        if (severidad != null && !severidad.isBlank()) {
+        if (tipoEvento != null && !tipoEvento.isBlank()) {
             spec = spec.and((root, query, cb) ->
-                    cb.equal(root.get("severidad"), severidad));
+                    cb.equal(root.get("tipoEvento"), tipoEvento));
+        }
+
+        if (sensorCodigo != null && !sensorCodigo.isBlank()) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("sensor").get("codigo"), sensorCodigo));
+        }
+
+        if (fechaDesde != null) {
+            LocalDateTime inicio = fechaDesde.atStartOfDay();
+            spec = spec.and((root, query, cb) ->
+                    cb.greaterThanOrEqualTo(root.get("fechaHora"), inicio));
+        }
+
+        if (fechaHasta != null) {
+            LocalDateTime finExclusive = fechaHasta.plusDays(1).atStartOfDay();
+            spec = spec.and((root, query, cb) ->
+                    cb.lessThan(root.get("fechaHora"), finExclusive));
         }
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "fechaHora"));
