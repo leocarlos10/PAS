@@ -1,9 +1,10 @@
-import { ToggleZonaActivaApi } from "@/api/zonas.api"
+import { ToggleZonaActivaApi, UpdateProgramacionHorariaApi } from "@/api/zonas.api"
 import { useAuthContext } from "@/context/auth.context"
-import type { ZonaResponse } from "@/types"
+import type { ZonaResponse, ProgramacionHoraria, ProgramacionHorariaRequest } from "@/types"
 import { getErrorToastType, handleApiError } from "@/utils/apiErrorHandler"
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
+import { ProgramacionModal } from "./ProgramacionModal"
 
 type ZonaCardProps = {
   zona: ZonaResponse
@@ -29,6 +30,9 @@ export const ZonaCard = ({ zona, index, onZonaUpdated }: ZonaCardProps) => {
   const { token } = useAuthContext()
   const [currentZona, setCurrentZona] = useState(zona)
   const [isLoading, setIsLoading] = useState(false)
+  const [programacion, setProgramacion] = useState<ProgramacionHoraria | undefined>(undefined)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isProgramacionLoading, setIsProgramacionLoading] = useState(false)
 
   useEffect(() => {
     setCurrentZona(zona)
@@ -65,6 +69,33 @@ export const ZonaCard = ({ zona, index, onZonaUpdated }: ZonaCardProps) => {
     }
   }
 
+  const handleSaveProgramacion = async (nuevaProgramacion: ProgramacionHorariaRequest) => {
+    if (!token) {
+      toast.error("No autorizado: token no disponible")
+      return
+    }
+
+    try {
+      setIsProgramacionLoading(true)
+      const response = await UpdateProgramacionHorariaApi(currentZona.id, nuevaProgramacion, token)
+      const result = handleApiError(response)
+
+      if (result.success && response.data) {
+        setProgramacion(response.data)
+        toast.success("Programación de horarios actualizada correctamente")
+      } else {
+        const toastType = getErrorToastType(result.statusCode)
+        toast[toastType](result.message || "Error al guardar la programación")
+      }
+    } catch (error) {
+      console.error("Error al guardar programación:", error)
+      toast.error("Error al guardar la programación")
+      throw error
+    } finally {
+      setIsProgramacionLoading(false)
+    }
+  }
+
   return (
     <article className="relative rounded-xl border border-border bg-card p-6 shadow-sm">
       <div
@@ -91,7 +122,7 @@ export const ZonaCard = ({ zona, index, onZonaUpdated }: ZonaCardProps) => {
         </div>
         {isArmada ? (
           <button
-            className="flex items-center gap-2 rounded-lg border border-danger px-4 py-2 text-sm text-danger transition-colors hover:bg-danger/10 disabled:opacity-50"
+            className="flex items-center gap-2 rounded-lg border border-danger px-4 py-2 text-sm text-danger transition-colors hover:bg-danger/10 disabled:opacity-50 cursor-pointer"
             onClick={handleToggle}
             disabled={isLoading}
           >
@@ -100,7 +131,7 @@ export const ZonaCard = ({ zona, index, onZonaUpdated }: ZonaCardProps) => {
           </button>
         ) : (
           <button
-            className="flex items-center gap-2 rounded-lg bg-success px-4 py-2 text-sm text-success-foreground transition-colors hover:bg-success-muted disabled:opacity-50"
+            className="flex items-center gap-2 rounded-lg bg-success px-4 py-2 text-sm text-success-foreground transition-colors hover:bg-success-muted disabled:opacity-50 cursor-pointer"
             onClick={handleToggle}
             disabled={isLoading}
           >
@@ -155,7 +186,7 @@ export const ZonaCard = ({ zona, index, onZonaUpdated }: ZonaCardProps) => {
             <span className="material-symbols-outlined text-[20px] text-muted-foreground">history</span>
             Actividad
           </h3>
-          <div className="flex h-full flex-col items-center justify-center gap-2 text-center text-muted-foreground">
+          <div className="flex flex-col items-center justify-center gap-2 text-center text-muted-foreground">
             <span className="material-symbols-outlined text-[32px]">info</span>
             <span className="text-sm">
               Estado: {currentZona.estadoActual ?? (isArmada ? "ARMADA" : "DESARMADA")}
@@ -166,6 +197,58 @@ export const ZonaCard = ({ zona, index, onZonaUpdated }: ZonaCardProps) => {
           </div>
         </div>
       </div>
+
+      {/* Sección de Programación de Horarios */}
+      <div className="mt-6 rounded-lg border border-border bg-background/40 p-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="material-symbols-outlined text-[20px] text-muted-foreground">schedule</span>
+            <div>
+              {programacion ? (
+                <div>
+                  <p className="text-sm font-medium">
+                    Activación automática: <span className="font-semibold">{programacion.horaInicio}</span> — <span className="font-semibold">{programacion.horaFin}</span>
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {programacion.diasSemana.includes("lunes") && 
+                    programacion.diasSemana.includes("martes") && 
+                    programacion.diasSemana.includes("miercoles") && 
+                    programacion.diasSemana.includes("jueves") && 
+                    programacion.diasSemana.includes("viernes") &&
+                    !programacion.diasSemana.includes("sabado") &&
+                    !programacion.diasSemana.includes("domingo")
+                      ? "LUNES A VIERNES"
+                      : programacion.diasSemana.length === 7
+                      ? "TODOS LOS DÍAS"
+                      : programacion.diasSemana.map((d) => d.toUpperCase()).join(", ")}
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <p className="text-sm font-medium">Activación automática</p>
+                  <p className="text-xs text-muted-foreground mt-1">Sin programación configurada</p>
+                </div>
+              )}
+            </div>
+          </div>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            disabled={isProgramacionLoading}
+            className="flex items-center gap-2 rounded-lg border border-cyan-500/50 bg-cyan-500/10 px-3 py-2 text-sm font-medium text-cyan-500 transition-colors hover:bg-cyan-500/20 disabled:opacity-50 cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[18px]">edit</span>
+            {programacion ? "Editar horario" : "Configurar"}
+          </button>
+        </div>
+      </div>
+
+      <ProgramacionModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        programacionActual={programacion}
+        onSave={handleSaveProgramacion}
+        isLoading={isProgramacionLoading}
+      />
     </article>
   )
 }
