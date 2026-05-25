@@ -30,8 +30,8 @@ public class Zona {
     private String modoControl;
     private Boolean activa = true;
 
-    @OneToMany(mappedBy = "zona")
-    private Set<ProgramacionZona> programaciones = new HashSet<>();
+    @OneToOne(mappedBy = "zona", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private ProgramacionZona programacion;
 
     @OneToMany(mappedBy = "zona")
     private Set<Sensor> sensores = new HashSet<>();

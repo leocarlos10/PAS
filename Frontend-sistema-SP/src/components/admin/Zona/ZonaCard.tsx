@@ -36,6 +36,7 @@ export const ZonaCard = ({ zona, index, onZonaUpdated }: ZonaCardProps) => {
 
   useEffect(() => {
     setCurrentZona(zona)
+    setProgramacion(zona.programacion ?? undefined)
   }, [zona])
 
   const isArmada = currentZona.activa
@@ -82,6 +83,11 @@ export const ZonaCard = ({ zona, index, onZonaUpdated }: ZonaCardProps) => {
 
       if (result.success && response.data) {
         setProgramacion(response.data)
+        setCurrentZona((prev) => ({
+          ...prev,
+          modoControl: "AUTOMATICO",
+          programacion: response.data,
+        }))
         toast.success("Programación de horarios actualizada correctamente")
       } else {
         const toastType = getErrorToastType(result.statusCode)

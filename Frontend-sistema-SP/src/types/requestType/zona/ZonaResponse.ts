@@ -1,4 +1,5 @@
 import type { SensorResponse } from "./SensorResponse";
+import type { ProgramacionHoraria } from "./ProgramacionHoraria";
 
 export type ZonaResponse = {
     id: number;
@@ -10,4 +11,5 @@ export type ZonaResponse = {
     modoControl?: string;
     activa: boolean;
     sensores?: SensorResponse[];
+    programacion?: ProgramacionHoraria | null;
 }
