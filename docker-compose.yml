@@ -1,0 +1,27 @@
+services:
+  frontend:
+    image: ghcr.io/${DEV_USER}/frontend-sp:latest  
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+  backend:
+    image: ghcr.io/${DEV_USER}/backend-sp:latest   
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DB_URL: ${DB_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      FRONT_URL: ${FRONT_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+      SWAGGER_ENABLED: true
+      MQTT_BROKER_URL: ${MQTT_BROKER_URL}
+      MQTT_CLIENT_ID: ${MQTT_CLIENT_ID}
+      MQTT_TOPICS: ${MQTT_TOPICS}
+      MQTT_USERNAME: ${mqttdeploy}
+      MQTT_PASSWORD: ${MQTT_PASSWORD}
+      

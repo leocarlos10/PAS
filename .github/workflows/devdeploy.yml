@@ -1,0 +1,60 @@
+name: DevDeploy
+
+on:
+  push:
+    branches: [dev]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_FRONT: ghcr.io/${{ secrets.DEV_USER }}/frontend-sp
+  IMAGE_BACK: ghcr.io/${{ secrets.DEV_USER }}/backend-sp
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.DEV_USER }}
+          password: ${{ secrets.TOKEND }}
+
+      - name: Build & push frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Frontend-sistema-SP
+          push: true
+          tags: ${{ env.IMAGE_FRONT }}:latest
+          build-args: |
+            VITE_API_URL=http://localhost:8080/api/v1
+            VITE_CRYPTO_SECRET_KEY=${{ secrets.DEV_VITE_CRYPTO_SECRET_KEY }}
+            NGINX_SERVER_NAME=${{ secrets.DEV_NGINX_SERVER_NAME }}
+
+      - name: Build & push backend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Backend-sistem-SP
+          push: true
+          tags: ${{ env.IMAGE_BACK }}:latest
+
+      - name: Deploy en VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEV_VPS_HOST }}
+          username: deploy
+          key: ${{ secrets.DEV_VPS_SSH_KEY }}
+          script: |
+            cd /home/deploy/app
+            echo ${{ secrets.DEV_TOKEND }} | docker login ghcr.io -u ${{ secrets.DEV_USER }} --password-stdin
+            docker compose pull frontend backend
+            docker compose up -d --no-deps frontend backend
+            docker image prune -f
+
+
