@@ -1,62 +1,27 @@
 services:
-  mysql:
-    image: mysql:8.4
-    restart: unless-stopped
-    env_file: .env
-    volumes:
-      - mysql-data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 5s
-      timeout: 5s
-      retries: 15
-      start_period: 40s
-
-  backend:
-    build:
-      context: ./Backend-sistem-SP
-      dockerfile: Dockerfile
-    restart: unless-stopped
-    env_file: .env
-    environment:
-      DB_URL: ${DB_URL:-jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
-      DB_USERNAME: ${DB_USERNAME:-${MYSQL_USER}}
-      DB_PASSWORD: ${DB_PASSWORD:-${MYSQL_PASSWORD}}
-      FRONT_URL: ${FRONT_URL:-http://localhost}
-      MQTT_ENABLED: ${MQTT_ENABLED:-true}
-      MQTT_BROKER_URL: ${MQTT_BROKER_URL:-}
-      MQTT_CLIENT_ID: ${MQTT_CLIENT_ID:-}
-      MQTT_TOPIC_FILTER: ${MQTT_TOPIC_FILTER:-${MQTT_TOPICS:-jardin/#}}
-      MQTT_USERNAME: ${MQTT_USERNAME:-}
-      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
-    depends_on:
-      mysql:
-        condition: service_healthy
-
   frontend:
-    build:
-      context: ./Frontend-sistema-SP
-      dockerfile: Dockerfile
-      args:
-        VITE_API_URL: /api/v1
-        VITE_CRYPTO_SECRET_KEY: ${VITE_CRYPTO_SECRET_KEY}
-        NGINX_SERVER_NAME: ${NGINX_SERVER_NAME:-_}
+    image: ghcr.io/${PROD_USER}/frontend-prod:latest  
     restart: unless-stopped
     ports:
       - "80:80"
     depends_on:
       - backend
 
-  phpmyadmin:
-    image: phpmyadmin:5.2
+  backend:
+    image: ghcr.io/${PROD_USER}/backend-prod:latest   
     restart: unless-stopped
-    profiles: ["tools"]
-    ports:
-      - "8081:80"
     env_file: .env
-    depends_on:
-      mysql:
-        condition: service_healthy
-
-volumes:
-  mysql-data:
+    environment:
+      DB_URL: ${DB_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      FRONT_URL: ${FRONT_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+      SWAGGER_ENABLED: true
+      MQTT_BROKER_URL: ${MQTT_BROKER_URL}
+      MQTT_CLIENT_ID: ${MQTT_CLIENT_ID}
+      MQTT_TOPIC_FILTER: ${MQTT_TOPIC_FILTER:-${MQTT_TOPICS}}
+      MQTT_USERNAME: ${MQTT_USERNAME}
+      MQTT_PASSWORD: ${MQTT_PASSWORD}
+      MQTT_ENABLED: ${MQTT_ENABLED:-true}
