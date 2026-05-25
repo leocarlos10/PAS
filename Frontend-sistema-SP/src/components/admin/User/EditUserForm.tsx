@@ -1,5 +1,5 @@
 import { useState } from "react"
-import type { AdminUserResponse, Response, UpdateUserRequest } from "@/types"
+import type { AdminUserResponse } from "@/types"
 import type { SubmitEvent } from "react"
 import { UpdateUserApi } from "@/api/usuarios.api"
 import { useAuthContext } from "@/context/auth.context"
@@ -9,7 +9,7 @@ import { handleApiError, getErrorToastType } from "@/utils/apiErrorHandler"
 type Props = {
   user: AdminUserResponse
   onClose: () => void
-  onSaved?: (updated?: Partial<UpdateUserRequest>) => void
+  onSaved?: (updated?: AdminUserResponse) => void
 }
 
 export const EditUserForm = ({ user, onClose, onSaved }: Props) => {
@@ -31,10 +31,15 @@ export const EditUserForm = ({ user, onClose, onSaved }: Props) => {
       return
     }
 
+    if (!token) {
+      toast.error("No autorizado: token no disponible")
+      return
+    }
+
     setSaving(true)
     try {
 
-      const updated = await UpdateUserApi(user.id, { name, username, phone }, token) as Response<Partial<UpdateUserRequest>>
+      const updated = await UpdateUserApi(user.id, { name, username, phone }, token)
 
       // Usar el handler centralizado
       const result = handleApiError(updated)

@@ -46,3 +46,10 @@ springdoc:
   api-docs:
     enabled: ${SWAGGER_ENABLED}
     path: /v3/api-docs
+
+mqtt:
+  broker-url: ${MQTT_BROKER_URL}
+  client-id: ${MQTT_CLIENT_ID}
+  topic-filter: ${MQTT_TOPIC_FILTER:jardin/#}
+  username: ${MQTT_USERNAME}
+  password: ${MQTT_PASSWORD}
