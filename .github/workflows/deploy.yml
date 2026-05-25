@@ -7,8 +7,8 @@ on:
       - 'Backend-sistem-SP/**'
 env:
   REGISTRY: ghcr.io
-  IMAGE_FRONT: ghcr.io/${{ secrets.PROD_USER }}/frontend-sp
-  IMAGE_BACK: ghcr.io/${{ secrets.PROD_USER }}/backend-sp
+  IMAGE_FRONT: ghcr.io/${{ secrets.PROD_USER }}/frontend-prod
+  IMAGE_BACK: ghcr.io/${{ secrets.PROD_USER }}/backend-prod
 jobs:
 
   changes:
