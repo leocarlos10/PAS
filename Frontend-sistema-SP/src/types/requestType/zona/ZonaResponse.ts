@@ -12,4 +12,7 @@ export type ZonaResponse = {
     activa: boolean;
     sensores?: SensorResponse[];
     programaciones?: ProgramacionHoraria[];
+    dispositivoConectado?: boolean;
+    comandoEnviadoBroker?: boolean;
+    advertencia?: string | null;
 }

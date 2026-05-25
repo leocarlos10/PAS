@@ -10,6 +10,7 @@ import backend.security_alert.models.User;
 import backend.security_alert.models.Zona;
 import backend.security_alert.repository.UserRepository;
 import backend.security_alert.service.ProgramacionZonaService;
+import backend.security_alert.service.ZonaComandoResult;
 import backend.security_alert.service.ZonaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -49,13 +50,13 @@ public class ZonaController {
     }
 
     @PatchMapping("/{zonaId}/activa")
-    public ResponseEntity<ZonaResponse> actualizarActiva(
+    public ResponseEntity<ZonaActivaResponse> actualizarActiva(
             @PathVariable Long zonaId,
             @RequestBody ZonaActivaRequest request) {
 
         User usuario = obtenerUsuarioAutenticado();
-        Zona zona = zonaService.actualizarActiva(zonaId, request.activa(), usuario);
-        return ResponseEntity.ok(ZonaResponse.from(zona));
+        ZonaComandoResult resultado = zonaService.actualizarActiva(zonaId, request.activa(), usuario);
+        return ResponseEntity.ok(ZonaActivaResponse.from(resultado));
     }
 
     @GetMapping("/{zonaId}/programacion")
@@ -149,6 +150,49 @@ public class ZonaController {
                 .ultimoReporte(sensor.getUltimoReporte())
                 .activo(sensor.getActivo())
                 .build();
+    }
+
+    public record ZonaActivaResponse(
+            Long id,
+            Long dispositivoId,
+            String nombre,
+            String descripcion,
+            String ubicacion,
+            String estadoActual,
+            String modoControl,
+            Boolean activa,
+            List<ProgramacionHorariaResponse> programaciones,
+            List<SensorResponse> sensores,
+            Boolean dispositivoConectado,
+            Boolean comandoEnviadoBroker,
+            String advertencia
+    ) {
+        public static ZonaActivaResponse from(ZonaComandoResult resultado) {
+            Zona zona = resultado.zona();
+            Long dispositivoId = zona.getDispositivo() != null ? zona.getDispositivo().getId() : null;
+            List<ProgramacionHorariaResponse> programaciones = zona.getProgramaciones() == null
+                    ? List.of()
+                    : zona.getProgramaciones().stream().map(ProgramacionHorariaResponse::from).toList();
+            List<SensorResponse> sensores = zona.getSensores() == null
+                    ? List.of()
+                    : zona.getSensores().stream().map(ZonaController::toSensorResponse).toList();
+
+            return new ZonaActivaResponse(
+                    zona.getId(),
+                    dispositivoId,
+                    zona.getNombre(),
+                    zona.getDescripcion(),
+                    zona.getUbicacion(),
+                    zona.getEstadoActual(),
+                    zona.getModoControl(),
+                    zona.getActiva(),
+                    programaciones,
+                    sensores,
+                    resultado.dispositivoConectado(),
+                    resultado.comandoEnviadoBroker(),
+                    resultado.advertencia()
+            );
+        }
     }
 
     public record ZonaActivaRequest(boolean activa) {

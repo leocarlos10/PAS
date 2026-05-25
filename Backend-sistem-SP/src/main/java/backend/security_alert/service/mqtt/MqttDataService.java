@@ -88,18 +88,19 @@ public class MqttDataService {
             if (sensor == null) {
                 log.warn("Sensor no encontrado (no se crea). codigo='{}' topic='{}' payload='{}'",
                         sensorCodigo, topic, payload);
-            } else {
-                if (sensor.getZona() != null && zona.getId() != null && !zona.getId().equals(sensor.getZona().getId())) {
-                    log.warn("Sensor pertenece a otra zona. codigo='{}' zonaTopic='{}' zonaSensor='{}'",
-                            sensorCodigo, zona.getNombre(), sensor.getZona().getNombre());
-                }
-                // Preferir la zona del sensor (fuente de verdad) si está definida
-                if (sensor.getZona() != null) {
-                    zona = sensor.getZona();
-                }
-                sensor.setUltimoReporte(LocalDateTime.now());
-                sensorRepository.save(sensor);
+                return null;
             }
+
+            if (sensor.getZona() != null && zona.getId() != null && !zona.getId().equals(sensor.getZona().getId())) {
+                log.warn("Sensor pertenece a otra zona. codigo='{}' zonaTopic='{}' zonaSensor='{}'",
+                        sensorCodigo, zona.getNombre(), sensor.getZona().getNombre());
+            }
+            // Preferir la zona del sensor (fuente de verdad) si está definida
+            if (sensor.getZona() != null) {
+                zona = sensor.getZona();
+            }
+            sensor.setUltimoReporte(LocalDateTime.now());
+            sensorRepository.save(sensor);
 
             Evento evento = new Evento();
             evento.setZona(zona);

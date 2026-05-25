@@ -56,17 +56,25 @@ public class ProgramacionSchedulerService {
             LocalTime horaDesarmado = LocalTime.parse(programacion.getHoraFin());
 
             if (ahora.equals(horaArmado) && !hoy.equals(programacion.getUltimoArmadoEjecutado())) {
-                zonaCommandService.ejecutarComandoProgramado(zona, true);
+                ZonaComandoResult resultado = zonaCommandService.ejecutarComandoProgramado(zona, true);
                 programacion.setUltimoArmadoEjecutado(hoy);
                 programacionZonaRepository.save(programacion);
-                log.info("Programación automática: zona {} armada", zona.getId());
+                if (resultado.advertencia() != null) {
+                    log.warn("Programación automática zona {} armada con advertencia: {}", zona.getId(), resultado.advertencia());
+                } else {
+                    log.info("Programación automática: zona {} armada", zona.getId());
+                }
             }
 
             if (ahora.equals(horaDesarmado) && !hoy.equals(programacion.getUltimoDesarmadoEjecutado())) {
-                zonaCommandService.ejecutarComandoProgramado(zona, false);
+                ZonaComandoResult resultado = zonaCommandService.ejecutarComandoProgramado(zona, false);
                 programacion.setUltimoDesarmadoEjecutado(hoy);
                 programacionZonaRepository.save(programacion);
-                log.info("Programación automática: zona {} desarmada", zona.getId());
+                if (resultado.advertencia() != null) {
+                    log.warn("Programación automática zona {} desarmada con advertencia: {}", zona.getId(), resultado.advertencia());
+                } else {
+                    log.info("Programación automática: zona {} desarmada", zona.getId());
+                }
             }
         }
     }

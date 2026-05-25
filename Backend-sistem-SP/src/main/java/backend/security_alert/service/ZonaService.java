@@ -39,10 +39,19 @@ public class ZonaService {
     }
 
     @Transactional
-    public Zona actualizarActiva(Long zonaId, boolean activa, User usuario) {
+    public ZonaComandoResult actualizarActiva(Long zonaId, boolean activa, User usuario) {
         Zona zona = zonaRepository.findByIdWithRelations(zonaId)
                 .orElseThrow(() -> new NotFoundException("Zona no encontrada: " + zonaId));
 
-        return zonaCommandService.ejecutarComandoManual(zona, activa, usuario);
+        ZonaComandoResult resultado = zonaCommandService.ejecutarComandoManual(zona, activa, usuario);
+        Zona recargada = zonaRepository.findByIdWithRelations(zonaId)
+                .orElseThrow(() -> new NotFoundException("Zona no encontrada: " + zonaId));
+
+        return new ZonaComandoResult(
+                recargada,
+                resultado.dispositivoConectado(),
+                resultado.comandoEnviadoBroker(),
+                resultado.advertencia()
+        );
     }
 }
