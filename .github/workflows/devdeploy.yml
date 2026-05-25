@@ -1,5 +1,4 @@
 name: DevDeploy
-
 on:
   push:
     branches: [dev]
@@ -10,22 +9,38 @@ env:
   IMAGE_BACK: ghcr.io/${{ secrets.DEV_USER }}/backend-sp
 
 jobs:
-  build-and-deploy:
+    
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'Frontend-sistema-SP/**'
+            backend:
+              - 'Backend-sistem-SP/**'
+               
+  build-frontend:
+    needs: changes
+    if: ${{ needs.changes.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-
     steps:
       - uses: actions/checkout@v4
-
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ secrets.DEV_USER }}
           password: ${{ secrets.DEV_TOKEND }}
-
       - name: Build & push frontend
         uses: docker/build-push-action@v5
         with:
@@ -37,6 +52,22 @@ jobs:
             VITE_CRYPTO_SECRET_KEY=${{ secrets.DEV_VITE_CRYPTO_SECRET_KEY }}
             NGINX_SERVER_NAME=${{ secrets.DEV_NGINX_SERVER_NAME }}
 
+
+  build-backend:
+    needs: changes
+    if: ${{ needs.changes.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.DEV_USER }}
+          password: ${{ secrets.DEV_TOKEN }}
       - name: Build & push backend
         uses: docker/build-push-action@v5
         with:
@@ -44,6 +75,15 @@ jobs:
           push: true
           tags: ${{ env.IMAGE_BACK }}:latest
 
+  deploy:
+    needs: [changes, build-frontend, build-backend]
+    if: |
+      always() &&
+      (needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true') &&
+      (needs.build-frontend.result == 'success' || needs.build-frontend.result == 'skipped') &&
+      (needs.build-backend.result == 'success' || needs.build-backend.result == 'skipped')
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy en VPS
         uses: appleboy/ssh-action@v1
         with:
@@ -51,10 +91,20 @@ jobs:
           username: ${{ secrets.DEV_LINUX_USERNAME }}
           key: ${{ secrets.DEV_VPS_SSH_KEY }}
           script: |
+            set -e
             cd /home/deploy/app
-            echo ${{ secrets.DEV_TOKEND }} | docker login ghcr.io -u ${{ secrets.DEV_USER }} --password-stdin
-            docker compose pull frontend backend
-            docker compose up -d --no-deps frontend backend
+
+            echo ${{ secrets.DEV_TOKEN }} | docker login ghcr.io -u ${{ secrets.DEV_USER }} --password-stdin
+            
+            if [ "${{ needs.changes.outputs.frontend }}" == "true" ]; then
+              docker compose pull frontend
+              docker compose up -d --force-recreate --no-deps frontend
+            fi
+
+            if [ "${{ needs.changes.outputs.backend }}" == "true" ]; then
+              docker compose pull backend
+              docker compose up -d --force-recreate --no-deps backend
+            fi
+
+            docker logout ghcr.io
             docker image prune -f
-
-
