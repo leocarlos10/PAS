@@ -92,7 +92,7 @@ jobs:
           key: ${{ secrets.DEV_VPS_SSH_KEY }}
           script: |
             set -e
-            cd /home/deploy/app
+            cd /home/ubuntu/app
 
             echo ${{ secrets.DEV_TOKEN }} | docker login ghcr.io -u ${{ secrets.DEV_USER }} --password-stdin
             

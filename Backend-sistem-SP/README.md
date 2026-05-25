@@ -44,4 +44,3 @@ for activate visit secrest.example
 - `GET /api/zonas` lista zonas.
   - Filtros opcionales: `?dispositivoId=<id>` y/o `?activa=true|false`
 - `GET /api/zonas/{zonaId}` obtiene una zona por id.
-
