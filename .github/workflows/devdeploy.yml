@@ -48,7 +48,7 @@ jobs:
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.DEV_VPS_HOST }}
-          username: $${{ secrets.DEV_LINUX_USERNAME }}
+          username: ${{ secrets.DEV_LINUX_USERNAME }}
           key: ${{ secrets.DEV_VPS_SSH_KEY }}
           script: |
             cd /home/deploy/app
