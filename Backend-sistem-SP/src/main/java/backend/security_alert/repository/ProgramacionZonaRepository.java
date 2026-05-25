@@ -11,7 +11,9 @@ import java.util.Optional;
 @Repository
 public interface ProgramacionZonaRepository extends JpaRepository<ProgramacionZona, Long> {
 
-    Optional<ProgramacionZona> findByZonaId(Long zonaId);
+    List<ProgramacionZona> findAllByZona_Id(Long zonaId);
+
+    Optional<ProgramacionZona> findByIdAndZona_Id(Long id, Long zonaId);
 
     @EntityGraph(attributePaths = {"zona", "zona.dispositivo"})
     List<ProgramacionZona> findAllByActivaTrue();

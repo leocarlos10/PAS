@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -28,36 +27,73 @@ public class ProgramacionZonaService {
     private final ZonaRepository zonaRepository;
 
     @Transactional(readOnly = true)
-    public Optional<ProgramacionZona> obtenerPorZona(Long zonaId) {
-        return programacionZonaRepository.findByZonaId(zonaId);
+    public List<ProgramacionZona> listarPorZona(Long zonaId) {
+        verificarZonaExiste(zonaId);
+        return programacionZonaRepository.findAllByZona_Id(zonaId);
     }
 
     @Transactional
-    public ProgramacionZona guardarProgramacion(Long zonaId, ProgramacionHorariaRequest request) {
-        validarHorarios(request);
-
+    public ProgramacionZona crear(Long zonaId, ProgramacionHorariaRequest request) {
         Zona zona = zonaRepository.findByIdWithRelations(zonaId)
                 .orElseThrow(() -> new NotFoundException("Zona no encontrada: " + zonaId));
 
-        ProgramacionZona programacion = programacionZonaRepository.findByZonaId(zonaId)
-                .orElseGet(() -> {
-                    ProgramacionZona nueva = new ProgramacionZona();
-                    nueva.setZona(zona);
-                    return nueva;
-                });
+        ProgramacionZona programacion = new ProgramacionZona();
+        programacion.setZona(zona);
+        aplicarDatos(programacion, request);
 
+        ProgramacionZona guardada = programacionZonaRepository.save(programacion);
+        sincronizarModoControl(zona.getId());
+        return guardada;
+    }
+
+    @Transactional
+    public ProgramacionZona actualizar(Long zonaId, Long programacionId, ProgramacionHorariaRequest request) {
+        ProgramacionZona programacion = obtenerProgramacionDeZona(zonaId, programacionId);
+        aplicarDatos(programacion, request);
+
+        ProgramacionZona guardada = programacionZonaRepository.save(programacion);
+        sincronizarModoControl(zonaId);
+        return guardada;
+    }
+
+    @Transactional
+    public void eliminar(Long zonaId, Long programacionId) {
+        ProgramacionZona programacion = obtenerProgramacionDeZona(zonaId, programacionId);
+        programacionZonaRepository.delete(programacion);
+        sincronizarModoControl(zonaId);
+    }
+
+    private ProgramacionZona obtenerProgramacionDeZona(Long zonaId, Long programacionId) {
+        return programacionZonaRepository.findByIdAndZona_Id(programacionId, zonaId)
+                .orElseThrow(() -> new NotFoundException(
+                        "Programación no encontrada: " + programacionId + " para zona " + zonaId));
+    }
+
+    private void verificarZonaExiste(Long zonaId) {
+        if (!zonaRepository.existsById(zonaId)) {
+            throw new NotFoundException("Zona no encontrada: " + zonaId);
+        }
+    }
+
+    private void aplicarDatos(ProgramacionZona programacion, ProgramacionHorariaRequest request) {
+        validarHorarios(request);
         programacion.setHoraInicio(request.horaInicio());
         programacion.setHoraFin(request.horaFin());
         programacion.setDiasSemana(normalizarDiasSemana(request.diasSemana()));
         programacion.setActiva(request.activa());
         programacion.setUltimoArmadoEjecutado(null);
         programacion.setUltimoDesarmadoEjecutado(null);
+    }
 
-        zona.setProgramacion(programacion);
-        zona.setModoControl(Boolean.TRUE.equals(request.activa()) ? "AUTOMATICO" : "MANUAL");
+    private void sincronizarModoControl(Long zonaId) {
+        Zona zona = zonaRepository.findById(zonaId)
+                .orElseThrow(() -> new NotFoundException("Zona no encontrada: " + zonaId));
 
+        boolean algunaActiva = programacionZonaRepository.findAllByZona_Id(zonaId).stream()
+                .anyMatch(p -> Boolean.TRUE.equals(p.getActiva()));
+
+        zona.setModoControl(algunaActiva ? "AUTOMATICO" : "MANUAL");
         zonaRepository.save(zona);
-        return programacionZonaRepository.save(programacion);
     }
 
     private void validarHorarios(ProgramacionHorariaRequest request) {

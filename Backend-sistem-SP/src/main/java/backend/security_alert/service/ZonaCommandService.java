@@ -39,7 +39,9 @@ public class ZonaCommandService {
         zona.setActiva(activa);
         zona.setEstadoActual(accion.equals("ARMAR") ? "ARMADA" : "DESARMADA");
 
-        if (zona.getProgramacion() != null && Boolean.TRUE.equals(zona.getProgramacion().getActiva())) {
+        boolean tieneProgramacionActiva = zona.getProgramaciones() != null
+                && zona.getProgramaciones().stream().anyMatch(p -> Boolean.TRUE.equals(p.getActiva()));
+        if (tieneProgramacionActiva) {
             zona.setModoControl("AUTOMATICO");
         }
 

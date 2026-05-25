@@ -59,22 +59,40 @@ public class ZonaController {
     }
 
     @GetMapping("/{zonaId}/programacion")
-    public ResponseEntity<ProgramacionHorariaResponse> obtenerProgramacion(@PathVariable Long zonaId) {
-        zonaService.obtenerZona(zonaId);
-        ProgramacionHorariaResponse response = programacionZonaService.obtenerPorZona(zonaId)
+    public ResponseEntity<List<ProgramacionHorariaResponse>> listarProgramaciones(@PathVariable Long zonaId) {
+        List<ProgramacionHorariaResponse> programaciones = programacionZonaService.listarPorZona(zonaId)
+                .stream()
                 .map(ProgramacionHorariaResponse::from)
-                .orElse(null);
-        return ResponseEntity.ok(response);
+                .toList();
+        return ResponseEntity.ok(programaciones);
     }
 
-    @PatchMapping("/{zonaId}/programacion")
-    public ResponseEntity<ProgramacionHorariaResponse> actualizarProgramacion(
+    @PostMapping("/{zonaId}/programacion")
+    public ResponseEntity<ProgramacionHorariaResponse> crearProgramacion(
             @PathVariable Long zonaId,
             @Valid @RequestBody ProgramacionHorariaRequest request) {
 
-        zonaService.obtenerZona(zonaId);
-        ProgramacionZona programacion = programacionZonaService.guardarProgramacion(zonaId, request);
+        ProgramacionZona programacion = programacionZonaService.crear(zonaId, request);
         return ResponseEntity.ok(ProgramacionHorariaResponse.from(programacion));
+    }
+
+    @PatchMapping("/{zonaId}/programacion/{programacionId}")
+    public ResponseEntity<ProgramacionHorariaResponse> actualizarProgramacion(
+            @PathVariable Long zonaId,
+            @PathVariable Long programacionId,
+            @Valid @RequestBody ProgramacionHorariaRequest request) {
+
+        ProgramacionZona programacion = programacionZonaService.actualizar(zonaId, programacionId, request);
+        return ResponseEntity.ok(ProgramacionHorariaResponse.from(programacion));
+    }
+
+    @DeleteMapping("/{zonaId}/programacion/{programacionId}")
+    public ResponseEntity<Void> eliminarProgramacion(
+            @PathVariable Long zonaId,
+            @PathVariable Long programacionId) {
+
+        programacionZonaService.eliminar(zonaId, programacionId);
+        return ResponseEntity.noContent().build();
     }
 
     private User obtenerUsuarioAutenticado() {
@@ -94,16 +112,16 @@ public class ZonaController {
             String estadoActual,
             String modoControl,
             Boolean activa,
-            ProgramacionHorariaResponse programacion,
-            java.util.List<SensorResponse> sensores
+            List<ProgramacionHorariaResponse> programaciones,
+            List<SensorResponse> sensores
     ) {
         public static ZonaResponse from(Zona zona) {
             Long dispositivoId = zona.getDispositivo() != null ? zona.getDispositivo().getId() : null;
-            ProgramacionHorariaResponse programacion = zona.getProgramacion() != null
-                    ? ProgramacionHorariaResponse.from(zona.getProgramacion())
-                    : null;
-            java.util.List<SensorResponse> sensores = zona.getSensores() == null
-                    ? java.util.List.of()
+            List<ProgramacionHorariaResponse> programaciones = zona.getProgramaciones() == null
+                    ? List.of()
+                    : zona.getProgramaciones().stream().map(ProgramacionHorariaResponse::from).toList();
+            List<SensorResponse> sensores = zona.getSensores() == null
+                    ? List.of()
                     : zona.getSensores().stream().map(ZonaController::toSensorResponse).toList();
 
             return new ZonaResponse(
@@ -115,7 +133,7 @@ public class ZonaController {
                     zona.getEstadoActual(),
                     zona.getModoControl(),
                     zona.getActiva(),
-                    programacion,
+                    programaciones,
                     sensores
             );
         }
