@@ -33,6 +33,13 @@ services:
     dns:
       - 8.8.8.8
       - 8.8.4.4
+    environment:
+      MQTT_ENABLED: ${MQTT_ENABLED:-true}
+      MQTT_BROKER_URL: ${MQTT_BROKER_URL:-}
+      MQTT_CLIENT_ID: ${MQTT_CLIENT_ID:-}
+      MQTT_TOPIC_FILTER: ${MQTT_TOPIC_FILTER:-${MQTT_TOPICS:-jardin/#}}
+      MQTT_USERNAME: ${MQTT_USERNAME:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
     volumes:
       - ./Backend-sistem-SP:/app
     depends_on:

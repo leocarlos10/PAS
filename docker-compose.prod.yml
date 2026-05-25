@@ -23,6 +23,12 @@ services:
       DB_USERNAME: ${DB_USERNAME:-${MYSQL_USER}}
       DB_PASSWORD: ${DB_PASSWORD:-${MYSQL_PASSWORD}}
       FRONT_URL: ${FRONT_URL:-http://localhost}
+      MQTT_ENABLED: ${MQTT_ENABLED:-true}
+      MQTT_BROKER_URL: ${MQTT_BROKER_URL:-}
+      MQTT_CLIENT_ID: ${MQTT_CLIENT_ID:-}
+      MQTT_TOPIC_FILTER: ${MQTT_TOPIC_FILTER:-${MQTT_TOPICS:-jardin/#}}
+      MQTT_USERNAME: ${MQTT_USERNAME:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
     depends_on:
       mysql:
         condition: service_healthy
