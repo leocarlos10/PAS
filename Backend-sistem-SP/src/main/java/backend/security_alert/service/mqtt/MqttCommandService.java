@@ -43,6 +43,24 @@ public class MqttCommandService {
         }
     }
 
+    public void publicarJson(String topic, Object payload, int qos, boolean retained) {
+        if (topic == null || topic.isBlank()) {
+            log.warn("No se publicó MQTT: topic vacío. payload={}", payload);
+            return;
+        }
+        try {
+            ensureConnected();
+            byte[] bytes = objectMapper.writeValueAsBytes(payload);
+            MqttMessage message = new MqttMessage(bytes);
+            message.setQos(qos);
+            message.setRetained(retained);
+            client.publish(topic, message);
+            log.info("MQTT publicado. topic='{}' payload='{}'", topic, new String(bytes, StandardCharsets.UTF_8));
+        } catch (Exception e) {
+            log.error("Error publicando MQTT. topic='{}' payload={}", topic, payload, e);
+        }
+    }
+
     private void ensureConnected() throws MqttException {
         if (client != null && client.isConnected()) return;
         synchronized (this) {
