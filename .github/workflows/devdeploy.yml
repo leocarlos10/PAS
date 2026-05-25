@@ -67,7 +67,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ secrets.DEV_USER }}
-          password: ${{ secrets.DEV_TOKEN }}
+          password: ${{ secrets.DEV_TOKEND }}
       - name: Build & push backend
         uses: docker/build-push-action@v5
         with:
