@@ -64,16 +64,14 @@ export const ZonaCard = ({ zona, index, onZonaUpdated }: ZonaCardProps) => {
   const icon = zoneIcons[index % zoneIcons.length]
 
   const actualizarZonaLocal = (nuevasProgramaciones: ProgramacionHoraria[]) => {
+    const updated: ZonaResponse = {
+      ...currentZona,
+      modoControl: nuevasProgramaciones.some((p) => p.activa) ? "AUTOMATICO" : "MANUAL",
+      programaciones: nuevasProgramaciones,
+    }
     setProgramaciones(nuevasProgramaciones)
-    setCurrentZona((prev) => {
-      const updated = {
-        ...prev,
-        modoControl: nuevasProgramaciones.some((p) => p.activa) ? "AUTOMATICO" : "MANUAL",
-        programaciones: nuevasProgramaciones,
-      }
-      onZonaUpdated(updated)
-      return updated
-    })
+    setCurrentZona(updated)
+    onZonaUpdated(updated)
   }
 
   const handleToggle = async () => {
