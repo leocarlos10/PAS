@@ -11,5 +11,4 @@ public class SecurityAlertApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(SecurityAlertApplication.class, args);
 	}
-
 }
