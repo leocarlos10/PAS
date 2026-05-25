@@ -2,6 +2,9 @@ name: DevDeploy
 on:
   push:
     branches: [dev]
+    paths:
+      - 'Frontend-sistema-SP/**'
+      - 'Backend-sistem-SP/**'
 env:
   REGISTRY: ghcr.io
   IMAGE_FRONT: ghcr.io/${{ secrets.DEV_USER }}/frontend-sp
