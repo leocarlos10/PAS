@@ -317,13 +317,13 @@ export const HistorialPage = () => {
         <div className="overflow-hidden rounded-xl border border-border bg-card">
           <div className="max-h-[360px] overflow-x-auto overflow-y-auto">
             <table className="w-full border-collapse text-left">
-              <thead className="sticky top-0 bg-muted/40">
+              <thead className="sticky top-0 z-10 bg-card shadow-sm">
                 <tr className="border-b border-border text-xs font-semibold uppercase text-muted-foreground">
-                  <th className="px-4 py-3">Fecha y hora</th>
-                  <th className="px-4 py-3">Zona</th>
-                  <th className="px-4 py-3">Sensor</th>
-                  <th className="px-4 py-3">Tipo</th>
-                  <th className="px-4 py-3">Severidad</th>
+                  <th className="bg-card px-4 py-3">Fecha y hora</th>
+                  <th className="bg-card px-4 py-3">Zona</th>
+                  <th className="bg-card px-4 py-3">Sensor</th>
+                  <th className="bg-card px-4 py-3">Tipo</th>
+                  <th className="bg-card px-4 py-3">Severidad</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border text-sm text-foreground">
