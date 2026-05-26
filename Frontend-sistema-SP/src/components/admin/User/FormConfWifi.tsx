@@ -1,11 +1,43 @@
 import type { SubmitEvent } from "react"
 import { toast } from "sonner"
+import { useAuthContext } from "@/context/auth.context"
+import { ConfigurarWifiBatch, GetDispositivos } from "@/api/dispositivos.api"
+import { useEffect, useState } from "react"
 
 type FormConfWifiProps = {
   onClose?: () => void
+  dispositivoIds?: number[] // si se pasa, envía solo a esos dispositivos; si no, envia a todos
 }
 
-export const FormConfWifi = ({ onClose }: FormConfWifiProps) => {
+export const FormConfWifi = ({ onClose, dispositivoIds }: FormConfWifiProps) => {
+  const { token } = useAuthContext()
+  const [resolvedIds, setResolvedIds] = useState<number[] | undefined>(dispositivoIds)
+  const [dispositivoNombres, setDispositivoNombres] = useState<string[]>([])
+
+  useEffect(() => {
+    if (dispositivoIds && dispositivoIds.length > 0) {
+      setResolvedIds(dispositivoIds)
+      return
+    }
+
+    const load = async () => {
+      try {
+        const res = await GetDispositivos(token ?? undefined)
+        if (res && res.data && Array.isArray(res.data)) {
+          const dispositivos = res.data as any[]
+          // Prefer devices with tipo containing 'esp'
+          const esp = dispositivos.filter(d => d.tipo && d.tipo.toLowerCase().includes('esp'))
+          const chosen = (esp.length > 0 ? esp : dispositivos).slice(0, 2)
+          setResolvedIds(chosen.map(d => d.id))
+          setDispositivoNombres(chosen.map(d => d.nombre || (`#${d.id}`)))
+        }
+      } catch (e) {
+        console.error('Error cargando dispositivos', e)
+      }
+    }
+
+    load()
+  }, [dispositivoIds, token])
 
   const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -37,12 +69,14 @@ export const FormConfWifi = ({ onClose }: FormConfWifiProps) => {
     })
 
     try {
-      // AGREGAR AQUÍ LA LÓGICA DE GUARDADO
-      // const response = await tuAPI.saveWifiConfig(formData);
-      
-      toast.success("Configuración Wi-Fi guardada correctamente")
-      e.currentTarget.reset()
-      onClose?.()
+      const response = await ConfigurarWifiBatch(resolvedIds, wifiName, wifiPassword, token ?? undefined)
+      if (response && response.responseCode === 200) {
+        toast.success("Configuración Wi-Fi enviada correctamente")
+        e.currentTarget.reset()
+        onClose?.()
+      } else {
+        toast.error(response?.responseMessage || "Error al enviar configuración Wi-Fi")
+      }
     } catch (error) {
       console.error("Error al guardar configuración Wi-Fi:", error)
       toast.error("Error al guardar la configuración")
@@ -72,6 +106,11 @@ export const FormConfWifi = ({ onClose }: FormConfWifiProps) => {
             El nombre de tu red Wi-Fi (visible en dispositivos cercanos)
           </p>
         </div>
+        {resolvedIds && (
+          <div className="text-sm text-muted-foreground">
+            Enviando configuración a: {dispositivoNombres.length ? dispositivoNombres.join(', ') : resolvedIds.map(id => `#${id}`).join(', ')}
+          </div>
+        )}
 
         {/* Input Contraseña Wi-Fi */}
         <div className="space-y-2">

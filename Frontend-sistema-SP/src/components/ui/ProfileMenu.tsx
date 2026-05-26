@@ -80,7 +80,7 @@ export const ProfileMenu = () => {
                             setOpenWifiDialog(true);
                         }}
                     >
-                        <span className="material-symbols-outlined text-base">settings</span>
+                        <span className="material-symbols-outlined text-base">wifi</span>
                         <span>Configuracion Wi-Fi</span>
                     </Button>
                     <div className="border-t border-sidebar-border/50"></div>
