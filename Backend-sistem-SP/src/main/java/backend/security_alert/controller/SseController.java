@@ -30,6 +30,6 @@ public class SseController {
      */
     @GetMapping(path = "/jardin", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribeJardin() {
-        return sseManager.crearEmitter();
+        return sseManager.createEmitter();
     }
 }
