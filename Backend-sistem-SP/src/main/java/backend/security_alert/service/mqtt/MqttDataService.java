@@ -88,18 +88,19 @@ public class MqttDataService {
             if (sensor == null) {
                 log.warn("Sensor no encontrado (no se crea). codigo='{}' topic='{}' payload='{}'",
                         sensorCodigo, topic, payload);
-            } else {
-                if (sensor.getZona() != null && zona.getId() != null && !zona.getId().equals(sensor.getZona().getId())) {
-                    log.warn("Sensor pertenece a otra zona. codigo='{}' zonaTopic='{}' zonaSensor='{}'",
-                            sensorCodigo, zona.getNombre(), sensor.getZona().getNombre());
-                }
-                // Preferir la zona del sensor (fuente de verdad) si está definida
-                if (sensor.getZona() != null) {
-                    zona = sensor.getZona();
-                }
-                sensor.setUltimoReporte(LocalDateTime.now());
-                sensorRepository.save(sensor);
+                return null;
             }
+
+            if (sensor.getZona() != null && zona.getId() != null && !zona.getId().equals(sensor.getZona().getId())) {
+                log.warn("Sensor pertenece a otra zona. codigo='{}' zonaTopic='{}' zonaSensor='{}'",
+                        sensorCodigo, zona.getNombre(), sensor.getZona().getNombre());
+            }
+            // Preferir la zona del sensor (fuente de verdad) si está definida
+            if (sensor.getZona() != null) {
+                zona = sensor.getZona();
+            }
+            sensor.setUltimoReporte(LocalDateTime.now());
+            sensorRepository.save(sensor);
 
             Evento evento = new Evento();
             evento.setZona(zona);
@@ -248,7 +249,6 @@ public class MqttDataService {
         return new SseEventoDTO(
                 evento.getId(),
                 evento.getTipoEvento(),
-                "INFO",
                 evento.getFechaHora(),
                 evento.getZona() != null ? evento.getZona().getId() : null,
                 evento.getSensor() != null ? evento.getSensor().getId() : null,
@@ -259,7 +259,6 @@ public class MqttDataService {
     public record SseEventoDTO(
             Long id,
             String tipoEvento,
-            String severidad,
             LocalDateTime fechaHora,
             Long zonaId,
             Long sensorId,

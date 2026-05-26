@@ -1,10 +1,9 @@
 package backend.security_alert.service;
 
 import backend.security_alert.exception.NotFoundException;
-import backend.security_alert.models.Dispositivo;
+import backend.security_alert.models.User;
 import backend.security_alert.models.Zona;
 import backend.security_alert.repository.ZonaRepository;
-import backend.security_alert.service.mqtt.MqttCommandService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,7 +16,7 @@ import java.util.Optional;
 public class ZonaService {
 
     private final ZonaRepository zonaRepository;
-    private final MqttCommandService mqttCommandService;
+    private final ZonaCommandService zonaCommandService;
 
     @Transactional(readOnly = true)
     public List<Zona> listarZonas(Optional<Long> dispositivoId, Optional<Boolean> activa) {
@@ -30,28 +29,29 @@ public class ZonaService {
         if (activa.isPresent()) {
             return zonaRepository.findAllByActiva(activa.get());
         }
-        return zonaRepository.findAll();
+        return zonaRepository.findAllWithRelations();
     }
 
     @Transactional(readOnly = true)
     public Zona obtenerZona(Long zonaId) {
-        return zonaRepository.findById(zonaId)
+        return zonaRepository.findByIdWithRelations(zonaId)
                 .orElseThrow(() -> new NotFoundException("Zona no encontrada: " + zonaId));
     }
 
     @Transactional
-    public Zona actualizarActiva(Long zonaId, boolean activa) {
-        Zona zona = zonaRepository.findById(zonaId)
+    public ZonaComandoResult actualizarActiva(Long zonaId, boolean activa, User usuario) {
+        Zona zona = zonaRepository.findByIdWithRelations(zonaId)
                 .orElseThrow(() -> new NotFoundException("Zona no encontrada: " + zonaId));
 
-        zona.setActiva(activa);
-        Zona guardada = zonaRepository.save(zona);
+        ZonaComandoResult resultado = zonaCommandService.ejecutarComandoManual(zona, activa, usuario);
+        Zona recargada = zonaRepository.findByIdWithRelations(zonaId)
+                .orElseThrow(() -> new NotFoundException("Zona no encontrada: " + zonaId));
 
-        Dispositivo dispositivo = guardada.getDispositivo();
-        String topicComando = (dispositivo != null) ? dispositivo.getTopicComando() : null;
-        String accion = activa ? "ARMAR" : "DESARMAR";
-        mqttCommandService.publicarComando(topicComando, accion);
-
-        return guardada;
+        return new ZonaComandoResult(
+                recargada,
+                resultado.dispositivoConectado(),
+                resultado.comandoEnviadoBroker(),
+                resultado.advertencia()
+        );
     }
 }

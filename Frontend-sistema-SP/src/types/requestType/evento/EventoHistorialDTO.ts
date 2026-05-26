@@ -6,5 +6,4 @@ export type EventoHistorialDTO = {
 	sensorNombre: string
 	tipoEvento: string
 	descripcion: string
-	severidad: string
 }
