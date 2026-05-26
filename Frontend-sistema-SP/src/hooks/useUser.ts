@@ -25,6 +25,12 @@ export const useUser = () => {
             return response;
         } catch (error) {
             console.error("Error registering user:", error);
+            return {
+                responseCode: 500,
+                responseMessage: error instanceof Error ? error.message : "Error desconocido al registrar usuario",
+                errorList: [],
+                data: undefined,
+            }
         } finally {
             setLoading(false);
         }
@@ -46,6 +52,12 @@ export const useUser = () => {
             return response;
         } catch (error) {
             console.error("Error fetching users:", error);
+            return {
+                responseCode: 500,
+                responseMessage: error instanceof Error ? error.message : "Error desconocido al obtener usuarios",
+                errorList: [],
+                data: undefined,
+            }
         } finally {
             setLoading(false);
         }

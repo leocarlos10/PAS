@@ -113,8 +113,8 @@ public class MqttDataService {
                     "Evento persistido: id={} zona='{}' sensor='{}' tipoSensor='{}' tipoEvento='{}' fechaHora={}",
                     guardado.getId(),
                     zona.getNombre(),
-                    sensor.getCodigo(),
-                    sensor.getTipoSensor(),
+                    sensor != null ? sensor.getCodigo() : sensorCodigo,
+                    sensor != null ? sensor.getTipoSensor() : tipoSensor,
                     guardado.getTipoEvento(),
                     guardado.getFechaHora()
             );
