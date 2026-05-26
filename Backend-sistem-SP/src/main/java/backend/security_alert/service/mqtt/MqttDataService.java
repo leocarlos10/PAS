@@ -6,6 +6,7 @@ import backend.security_alert.models.Zona;
 import backend.security_alert.repository.EventoRepository;
 import backend.security_alert.repository.SensorRepository;
 import backend.security_alert.repository.ZonaRepository;
+import backend.security_alert.service.DispositivoService;
 import backend.security_alert.sse.SseManager;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
