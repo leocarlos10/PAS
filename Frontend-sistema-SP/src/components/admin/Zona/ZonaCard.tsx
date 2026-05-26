@@ -11,10 +11,22 @@ import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { ProgramacionModal } from "./ProgramacionModal"
 
+interface SseEvento {
+  id: number
+  tipoEvento: string
+  severidad: string
+  fechaHora: string
+  zonaId: number
+  sensorId: number | null
+  payload: string
+}
+
 type ZonaCardProps = {
   zona: ZonaResponse
   index: number
   onZonaUpdated: (zona: ZonaResponse) => void
+  sseEventos?: SseEvento[]
+  sseConnected?: boolean
 }
 
 const zoneIcons = ["meeting_room", "desk", "warehouse", "door_front"]
@@ -46,7 +58,8 @@ const formatDiasSemana = (dias: DiaSemana[]) => {
   return dias.map((d) => d.toUpperCase()).join(", ")
 }
 
-export const ZonaCard = ({ zona, index, onZonaUpdated }: ZonaCardProps) => {
+export const ZonaCard = ({ zona, index, onZonaUpdated, sseEventos = [], sseConnected = false }: ZonaCardProps) => {
+  
   const { token } = useAuthContext()
   const [currentZona, setCurrentZona] = useState(zona)
   const [programaciones, setProgramaciones] = useState<ProgramacionHoraria[]>([])
@@ -54,11 +67,22 @@ export const ZonaCard = ({ zona, index, onZonaUpdated }: ZonaCardProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingProgramacion, setEditingProgramacion] = useState<ProgramacionHoraria | undefined>(undefined)
   const [isProgramacionLoading, setIsProgramacionLoading] = useState(false)
+  const [eventoActual, setEventoActual] = useState<SseEvento | null>(null)
 
   useEffect(() => {
     setCurrentZona(zona)
     setProgramaciones(zona.programaciones ?? [])
   }, [zona])
+
+  // Filtrar evento más reciente para esta zona
+  useEffect(() => {
+    if (sseEventos && sseEventos.length > 0) {
+      const eventoZona = sseEventos.find(e => e.zonaId === zona.id)
+      if (eventoZona) {
+        setEventoActual(eventoZona)
+      }
+    }
+  }, [sseEventos, zona.id])
 
   const isArmada = currentZona.activa
   const icon = zoneIcons[index % zoneIcons.length]
@@ -242,15 +266,24 @@ export const ZonaCard = ({ zona, index, onZonaUpdated }: ZonaCardProps) => {
             {(currentZona.sensores ?? []).length === 0 && (
               <p className="text-sm text-muted-foreground">Sin sensores registrados</p>
             )}
-            {(currentZona.sensores ?? []).map((sensor) => (
+            {(currentZona.sensores ?? []).map((sensor) => {
+              const eventoSensor = eventoActual?.sensorId === sensor.id
+              
+              return (
               <div
                 key={sensor.id}
-                className="flex items-center justify-between rounded-md border border-border/60 bg-card p-3"
+                className={`flex items-center justify-between rounded-md border p-3 transition-colors ${
+                  eventoSensor
+                    ? "border-warning/60 bg-warning/5 animate-pulse"
+                    : "border-border/60 bg-card"
+                }`}
               >
                 <div className="flex items-center gap-3">
                   <span
-                    className={`h-2 w-2 rounded-full ${
-                      isArmada && sensor.activo ? "bg-success" : "bg-border"
+                    className={`h-2 w-2 rounded-full transition-colors ${
+                      eventoSensor
+                        ? "bg-warning animate-pulse"
+                        : isArmada && sensor.activo ? "bg-success" : "bg-border"
                     }`}
                   />
                   <div>
@@ -258,17 +291,24 @@ export const ZonaCard = ({ zona, index, onZonaUpdated }: ZonaCardProps) => {
                       {sensor.codigo} - {sensor.tipoSensor}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {isArmada
+                      {eventoSensor
+                        ? `🔴 Evento: ${eventoActual.tipoEvento}`
+                        : isArmada
                         ? `Ultima vez: ${formatUltimoReporte(sensor.ultimoReporte)}`
                         : "Inactivo (Zona desarmada)"}
                     </div>
                   </div>
                 </div>
-                <span className={`text-sm ${isArmada ? "text-success" : "text-muted-foreground"}`}>
-                  {isArmada ? sensor.estadoActual ?? "Sin novedad" : "-"}
+                <span className={`text-sm font-medium ${
+                  eventoSensor
+                    ? "text-warning"
+                    : isArmada ? "text-success" : "text-muted-foreground"
+                }`}>
+                  {eventoSensor ? eventoActual.tipoEvento : (isArmada ? sensor.estadoActual ?? "Sin novedad" : "-")}
                 </span>
               </div>
-            ))}
+            )}
+            )}
           </div>
         </div>
 
@@ -277,15 +317,53 @@ export const ZonaCard = ({ zona, index, onZonaUpdated }: ZonaCardProps) => {
             <span className="material-symbols-outlined text-[20px] text-muted-foreground">history</span>
             Actividad
           </h3>
-          <div className="flex flex-col items-center justify-center gap-2 text-center text-muted-foreground">
-            <span className="material-symbols-outlined text-[32px]">info</span>
-            <span className="text-sm">
-              Estado: {currentZona.estadoActual ?? (isArmada ? "ARMADA" : "DESARMADA")}
-            </span>
-            {currentZona.descripcion && (
-              <span className="text-xs">{currentZona.descripcion}</span>
-            )}
-          </div>
+          {eventoActual ? (
+            <div className="space-y-3 rounded-lg border border-warning/50 bg-warning/5 p-3">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-warning animate-pulse" />
+                <span className="font-semibold text-warning">Evento en vivo</span>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Tipo:</span>
+                  <span className="font-medium text-warning">{eventoActual.tipoEvento}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Sensor ID:</span>
+                  <span className="font-medium">
+                    {currentZona.sensores?.find(s => s.id === eventoActual.sensorId)?.codigo || `#${eventoActual.sensorId}`}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Severidad:</span>
+                  <span className="font-medium">{eventoActual.severidad}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Hora:</span>
+                  <span className="font-medium text-xs">
+                    {new Date(eventoActual.fechaHora).toLocaleTimeString('es-CO')}
+                  </span>
+                </div>
+                {eventoActual.payload && (
+                  <div className="rounded bg-black/20 p-2 mt-2">
+                    <p className="text-xs text-muted-foreground break-all max-h-16 overflow-y-auto">
+                      {eventoActual.payload}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center gap-2 text-center text-muted-foreground">
+              <span className="material-symbols-outlined text-[32px]">info</span>
+              <span className="text-sm">
+                Estado: {currentZona.estadoActual ?? (isArmada ? "ARMADA" : "DESARMADA")}
+              </span>
+              {currentZona.descripcion && (
+                <span className="text-xs">{currentZona.descripcion}</span>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
