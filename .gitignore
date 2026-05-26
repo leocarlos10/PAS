@@ -1,1 +1,4 @@
 .env
+
+# ESP32 credentials (local only)
+Firmware-ESP32/**/secrets.h

@@ -1,25 +1,30 @@
 import { AdminHeader } from "@/components/admin/Layout/AdminHeader"
 import { ZonaCard, ZonaCardSkeleton } from "@/components/admin/Zona"
+import { useAuthContext } from "@/context/auth.context"
 import { useZonas } from "@/hooks/useZonas"
 import type { ZonaResponse } from "@/types"
 import { useCallback, useEffect, useState } from "react"
 
 export const ZonasPage = () => {
+  const { token } = useAuthContext()
   const { GetAllZonas, loading } = useZonas()
   const [zonas, setZonas] = useState<ZonaResponse[]>([])
 
   const fetchZonas = useCallback(async () => {
+    if (!token) return
+
     const response = await GetAllZonas()
     if (response?.responseCode === 200 && response.data) {
       setZonas(response.data)
-    } else {
+    } else if (response?.responseCode !== 401) {
       console.error(response?.responseMessage || "Error al obtener zonas")
     }
-  }, [GetAllZonas])
+  }, [GetAllZonas, token])
 
   useEffect(() => {
+    if (!token) return
     fetchZonas()
-  }, [fetchZonas])
+  }, [token, fetchZonas])
 
   const handleZonaUpdated = (updatedZona: ZonaResponse) => {
     setZonas((prev) =>

@@ -25,10 +25,10 @@ public class MqttCommandService {
 
     private volatile MqttClient client;
 
-    public void publicarComando(String topicComando, String accion) {
+    public boolean publicarComando(String topicComando, String accion) {
         if (topicComando == null || topicComando.isBlank()) {
             log.warn("No se publicó comando MQTT: topicComando vacío. accion={}", accion);
-            return;
+            return false;
         }
         ComandoPayload payload = new ComandoPayload(accion);
         try {
@@ -38,8 +38,10 @@ public class MqttCommandService {
             message.setQos(1);
             client.publish(topicComando, message);
             log.info("MQTT comando publicado. topic='{}' payload='{}'", topicComando, new String(bytes, StandardCharsets.UTF_8));
+            return true;
         } catch (Exception e) {
             log.error("Error publicando comando MQTT. topic='{}' accion={}", topicComando, accion, e);
+            return false;
         }
     }
 
