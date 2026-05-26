@@ -8,6 +8,7 @@ type AdminHeaderProps = {
     title: string;
     description: string;
     showLive?: boolean;
+    connected?: boolean;
     showButton? : boolean
     descriptionButton?: string
     reloadUsers?: () => void
@@ -15,7 +16,7 @@ type AdminHeaderProps = {
 }
 
 
-export const AdminHeader = ({ title, description, showLive, showButton, descriptionButton = "Agregar", reloadUsers, showWifiButton }: AdminHeaderProps) => {
+export const AdminHeader = ({ title, description, showLive, connected = true, showButton, descriptionButton = "Agregar", reloadUsers, showWifiButton }: AdminHeaderProps) => {
   // estado para controlar la apertura del modal de agregar usuario.
    const [open, setOpen] = useState<boolean>(false);
    const [openWifi, setOpenWifi] = useState<boolean>(false);
@@ -26,9 +27,15 @@ export const AdminHeader = ({ title, description, showLive, showButton, descript
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-2xl font-semibold">{title}</h1>
             {showLive && (
-              <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
-                <span className="h-2 w-2 rounded-full bg-success" />
-                En vivo
+              <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium ${
+                connected 
+                  ? 'border-success/50 bg-success/10 text-success'
+                  : 'border-destructive/50 bg-destructive/10 text-destructive'
+              }`}>
+                <span className={`h-2 w-2 rounded-full ${
+                  connected ? 'bg-success animate-pulse' : 'bg-destructive'
+                }`} />
+                {connected ? 'En vivo' : 'Desconectado'}
               </span>
             )}
           </div>
