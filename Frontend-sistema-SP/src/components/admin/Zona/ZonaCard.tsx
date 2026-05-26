@@ -58,7 +58,7 @@ const formatDiasSemana = (dias: DiaSemana[]) => {
   return dias.map((d) => d.toUpperCase()).join(", ")
 }
 
-export const ZonaCard = ({ zona, index, onZonaUpdated, sseEventos = [], sseConnected = false }: ZonaCardProps) => {
+export const ZonaCard = ({ zona, index, onZonaUpdated, sseEventos = [] }: ZonaCardProps) => {
   
   const { token } = useAuthContext()
   const [currentZona, setCurrentZona] = useState(zona)
