@@ -41,6 +41,18 @@ public class DispositivoController {
         ));
     }
 
+        @PostMapping("/config-wifi-batch")
+        public ResponseEntity<Map<String, Object>> configurarWifiBatch(
+            @RequestBody @Valid WifiConfigBatchRequest request) {
+
+        int sent = dispositivoService.enviarConfigWifiMultiple(request.dispositivoIds(), request.ssid(), request.password());
+
+        return ResponseEntity.ok(Map.of(
+            "mensaje", "Configuración enviada.",
+            "enviados", sent
+        ));
+        }
+
     public record DispositivoResponse(
             Long id,
             String nombre,
@@ -58,5 +70,12 @@ public class DispositivoController {
             @NotBlank @Size(max = 128) String password
     ) {
     }
+
+        public record WifiConfigBatchRequest(
+            List<Long> dispositivoIds,
+            @NotBlank @Size(max = 64) String ssid,
+            @NotBlank @Size(max = 128) String password
+        ) {
+        }
 }
 

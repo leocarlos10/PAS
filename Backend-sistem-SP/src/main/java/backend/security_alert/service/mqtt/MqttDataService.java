@@ -31,14 +31,50 @@ public class MqttDataService {
     private final SensorRepository sensorRepository;
     private final EventoRepository eventoRepository;
     private final SseManager sseManager;
+    private final DispositivoService dispositivoService;
 
     @Transactional
     public void procesarMensaje(String topic, String payload) {
+        // 1. Detectar si es un mensaje de estado del dispositivo (ej: inicio)
+        if (esEstadoDispositivo(topic, payload)) {
+            procesarEstadoDispositivo(topic, payload);
+        }
+
+        // 2. Procesar como evento normal
         Evento evento = persistirEvento(topic, payload);
         if (evento != null) {
             sseManager.enviarEvento("evento", eventoToSseData(evento, payload));
         } else {
             sseManager.enviarEvento("raw", payload);
+        }
+    }
+
+    private boolean esEstadoDispositivo(String topic, String payload) {
+        // Ejemplo: jardin/zona1/estado
+        return topic != null && topic.endsWith("/estado") && !topic.contains("/sensores/");
+    }
+
+    private void procesarEstadoDispositivo(String topic, String payload) {
+        try {
+            JsonNode json = safeReadTree(payload);
+            String estado = textOrNull(json, "estado");
+            
+            // Si el dispositivo dice que está "online" o similar, le enviamos la última configuración WiFi
+            if ("online".equalsIgnoreCase(estado) || "start".equalsIgnoreCase(estado) || "conectado".equalsIgnoreCase(estado)) {
+                TopicData td = parseTopic(topic).orElse(null);
+                if (td != null && td.zonaKey() != null) {
+                    Zona zona = resolverZona(td.zonaKey());
+                    if (zona != null && zona.getDispositivo() != null) {
+                        backend.security_alert.models.Dispositivo d = zona.getDispositivo();
+                        if (d.getWifiSsid() != null && !d.getWifiSsid().isBlank()) {
+                            log.info("Dispositivo {} online. Re-enviando configuración WiFi guardada.", d.getNombre());
+                            dispositivoService.enviarConfigWifi(d.getId(), d.getWifiSsid(), d.getWifiPassword());
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error procesando estado de dispositivo: {}", topic, e);
         }
     }
 

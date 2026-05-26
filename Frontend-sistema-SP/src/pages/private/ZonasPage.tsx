@@ -38,6 +38,7 @@ export const ZonasPage = () => {
         title="Gestion de Zonas"
         description="Monitoreo y control detallado por area."
         showLive={true}
+        showWifiButton={true}
       />
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         {loading && Array.from({ length: 2 }).map((_, index) => (
