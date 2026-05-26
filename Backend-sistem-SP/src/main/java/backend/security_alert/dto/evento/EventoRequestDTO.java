@@ -13,6 +13,5 @@ public class EventoRequestDTO {
     private Long idComando;
     private String tipoEvento;
     private String descripcion;
-    private String severidad;
     private String valorSensor;
 }

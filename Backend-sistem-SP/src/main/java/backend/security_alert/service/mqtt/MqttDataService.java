@@ -249,7 +249,6 @@ public class MqttDataService {
         return new SseEventoDTO(
                 evento.getId(),
                 evento.getTipoEvento(),
-                "INFO",
                 evento.getFechaHora(),
                 evento.getZona() != null ? evento.getZona().getId() : null,
                 evento.getSensor() != null ? evento.getSensor().getId() : null,
@@ -260,7 +259,6 @@ public class MqttDataService {
     public record SseEventoDTO(
             Long id,
             String tipoEvento,
-            String severidad,
             LocalDateTime fechaHora,
             Long zonaId,
             Long sensorId,

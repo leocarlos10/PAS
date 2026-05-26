@@ -29,15 +29,6 @@ const tipoStyles: Record<string, string> = {
   ARMADA: "bg-success/15 text-success-muted border border-success/30",
 }
 
-const severidadStyles: Record<string, string> = {
-  Alta: "bg-danger/15 text-danger-muted border border-danger/30",
-  ALTA: "bg-danger/15 text-danger-muted border border-danger/30",
-  Media: "bg-warning/15 text-warning-muted border border-warning/30",
-  MEDIA: "bg-warning/15 text-warning-muted border border-warning/30",
-  Baja: "bg-info/15 text-info-muted border border-info/30",
-  BAJA: "bg-info/15 text-info-muted border border-info/30",
-}
-
 const formatDateInput = (date: Date) => {
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, "0")
@@ -323,7 +314,6 @@ export const HistorialPage = () => {
                   <th className="bg-card px-4 py-3">Zona</th>
                   <th className="bg-card px-4 py-3">Sensor</th>
                   <th className="bg-card px-4 py-3">Tipo</th>
-                  <th className="bg-card px-4 py-3">Severidad</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border text-sm text-foreground">
@@ -342,16 +332,13 @@ export const HistorialPage = () => {
                       <td className="px-4 py-3">
                         <div className="h-6 w-20 animate-pulse rounded-full bg-muted" />
                       </td>
-                      <td className="px-4 py-3">
-                        <div className="h-6 w-20 animate-pulse rounded-full bg-muted" />
-                      </td>
                     </tr>
                   ))
                 ) : eventos.length === 0 ? (
                   <tr>
                     <td
                       className="px-4 py-6 text-center text-sm text-muted-foreground"
-                      colSpan={5}
+                      colSpan={4}
                     >
                       No hay eventos para mostrar.
                     </td>
@@ -379,16 +366,6 @@ export const HistorialPage = () => {
                             }`}
                           >
                             {evento.tipoEvento}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <span
-                            className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
-                              severidadStyles[evento.severidad] ??
-                              "bg-neutral/15 text-neutral-muted border border-neutral/30"
-                            }`}
-                          >
-                            {evento.severidad ?? "—"}
                           </span>
                         </td>
                       </tr>

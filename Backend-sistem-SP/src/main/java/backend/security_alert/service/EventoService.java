@@ -28,7 +28,6 @@ public class EventoService {
     private final EventoRepository eventoRepository;
     private final ZonaRepository zonaRepository;
     private final SensorRepository sensorRepository;
-    private final AlertaService alertaService;
 
     @Transactional(readOnly = true)
     public Page<EventoHistorialDTO> obtenerHistorialPaginado(
@@ -91,13 +90,7 @@ public class EventoService {
         evento.setDescripcion(dto.getDescripcion());
         evento.setFechaHora(LocalDateTime.now());
 
-        Evento guardado = eventoRepository.save(evento);
-
-        if ("ALTA".equals(dto.getSeveridad())) {
-            alertaService.generarAlerta(guardado);
-        }
-
-        return guardado;
+        return eventoRepository.save(evento);
     }
 
     private EventoHistorialDTO toHistorialDTO(Evento evento) {
@@ -109,7 +102,6 @@ public class EventoService {
         dto.setSensorNombre(evento.getSensor() != null ? evento.getSensor().getTipoSensor() : null);
         dto.setTipoEvento(evento.getTipoEvento());
         dto.setDescripcion(evento.getDescripcion());
-        dto.setSeveridad(null);
         return dto;
     }
 }
