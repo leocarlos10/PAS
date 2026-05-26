@@ -37,8 +37,8 @@ const formatDiasSemana = (dias: DiaSemana[]) => {
   const finDeSemana = ["sabado", "domingo"] as const
   const tieneEntreSemana = entreSemana.every((d) => dias.includes(d))
   const tieneFinDeSemana = finDeSemana.every((d) => dias.includes(d))
-  const soloEntreSemana = tieneEntreSemana && !dias.some((d) => finDeSemana.includes(d as DiaSemana))
-  const soloFinDeSemana = tieneFinDeSemana && !dias.some((d) => entreSemana.includes(d as DiaSemana))
+  const soloEntreSemana = tieneEntreSemana && !dias.some((d) => (finDeSemana as any).includes(d))
+  const soloFinDeSemana = tieneFinDeSemana && !dias.some((d) => (entreSemana as any).includes(d))
 
   if (soloEntreSemana) return "LUNES A VIERNES"
   if (soloFinDeSemana) return "SÁBADO Y DOMINGO"
