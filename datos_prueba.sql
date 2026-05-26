@@ -8,7 +8,7 @@
 -- ============================================================================
 -- 1. USUARIOS DEL SISTEMA
 -- ============================================================================
--- Contraseña por defecto para todos: 'admin123' (bcrypt $2a$12$rzIZY.YLMQ4zstc6eXb41e5l/369sb7OOw5SWBF6FRyI1wA2xoX0u)
+-- Contraseña por defecto para todos: '12341234' (bcrypt $2a$12$rzIZY.YLMQ4zstc6eXb41e5l/369sb7OOw5SWBF6FRyI1wA2xoX0u)
 INSERT INTO users (
   username,
   password,
@@ -20,11 +20,11 @@ INSERT INTO users (
   updated_at
 ) VALUES 
 (
-  'leo10',
+  'calebsenm',
   '$2a$12$rzIZY.YLMQ4zstc6eXb41e5l/369sb7OOw5SWBF6FRyI1wA2xoX0u',
   'ADMIN',
-  'Leocarlos Ospina',
-  '3113746267',
+  'Caleb',
+  '300000000',
   true,
   NOW(),
   NOW()
@@ -148,7 +148,7 @@ INSERT INTO sensores (
 -- Sensores Zona Norte
 (
   @zona_norte_id,
-  'ZN-MOV-01',
+  'Z1-MOV-01',
   'MOVIMIENTO',
   'Portón Principal',
   'ACTIVO',
@@ -157,7 +157,7 @@ INSERT INTO sensores (
 ),
 (
   @zona_norte_id,
-  'ZN-MAG-01',
+  'Z1-MAG-01',
   'MAGNETICO',
   'Puerta Peatonal',
   'INACTIVO',
@@ -167,7 +167,7 @@ INSERT INTO sensores (
 -- Sensores Zona Sur
 (
   @zona_sur_id,
-  'ZS-MOV-01',
+  'Z2-MOV-01',
   'MOVIMIENTO',
   'Entrada Garaje',
   'INACTIVO',
@@ -176,7 +176,7 @@ INSERT INTO sensores (
 ),
 (
   @zona_sur_id,
-  'ZS-MAG-01',
+  'Z2-MAG-01',
   'MAGNETICO',
   'Ventana Trasera',
   'ACTIVO',
