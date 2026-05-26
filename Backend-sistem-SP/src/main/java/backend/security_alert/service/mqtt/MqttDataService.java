@@ -6,6 +6,7 @@ import backend.security_alert.models.Zona;
 import backend.security_alert.repository.EventoRepository;
 import backend.security_alert.repository.SensorRepository;
 import backend.security_alert.repository.ZonaRepository;
+import backend.security_alert.service.DispositivoService;
 import backend.security_alert.sse.SseManager;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,14 +32,50 @@ public class MqttDataService {
     private final SensorRepository sensorRepository;
     private final EventoRepository eventoRepository;
     private final SseManager sseManager;
+    private final DispositivoService dispositivoService;
 
     @Transactional
     public void procesarMensaje(String topic, String payload) {
+        // 1. Detectar si es un mensaje de estado del dispositivo (ej: inicio)
+        if (esEstadoDispositivo(topic, payload)) {
+            procesarEstadoDispositivo(topic, payload);
+        }
+
+        // 2. Procesar como evento normal
         Evento evento = persistirEvento(topic, payload);
         if (evento != null) {
             sseManager.enviarEvento("evento", eventoToSseData(evento, payload));
         } else {
             sseManager.enviarEvento("raw", payload);
+        }
+    }
+
+    private boolean esEstadoDispositivo(String topic, String payload) {
+        // Ejemplo: jardin/zona1/estado
+        return topic != null && topic.endsWith("/estado") && !topic.contains("/sensores/");
+    }
+
+    private void procesarEstadoDispositivo(String topic, String payload) {
+        try {
+            JsonNode json = safeReadTree(payload);
+            String estado = textOrNull(json, "estado");
+            
+            // Si el dispositivo dice que está "online" o similar, le enviamos la última configuración WiFi
+            if ("online".equalsIgnoreCase(estado) || "start".equalsIgnoreCase(estado) || "conectado".equalsIgnoreCase(estado)) {
+                TopicData td = parseTopic(topic).orElse(null);
+                if (td != null && td.zonaKey() != null) {
+                    Zona zona = resolverZona(td.zonaKey());
+                    if (zona != null && zona.getDispositivo() != null) {
+                        backend.security_alert.models.Dispositivo d = zona.getDispositivo();
+                        if (d.getWifiSsid() != null && !d.getWifiSsid().isBlank()) {
+                            log.info("Dispositivo {} online. Re-enviando configuración WiFi guardada.", d.getNombre());
+                            dispositivoService.enviarConfigWifi(d.getId(), d.getWifiSsid(), d.getWifiPassword());
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error procesando estado de dispositivo: {}", topic, e);
         }
     }
 
@@ -88,18 +125,19 @@ public class MqttDataService {
             if (sensor == null) {
                 log.warn("Sensor no encontrado (no se crea). codigo='{}' topic='{}' payload='{}'",
                         sensorCodigo, topic, payload);
-            } else {
-                if (sensor.getZona() != null && zona.getId() != null && !zona.getId().equals(sensor.getZona().getId())) {
-                    log.warn("Sensor pertenece a otra zona. codigo='{}' zonaTopic='{}' zonaSensor='{}'",
-                            sensorCodigo, zona.getNombre(), sensor.getZona().getNombre());
-                }
-                // Preferir la zona del sensor (fuente de verdad) si está definida
-                if (sensor.getZona() != null) {
-                    zona = sensor.getZona();
-                }
-                sensor.setUltimoReporte(LocalDateTime.now());
-                sensorRepository.save(sensor);
+                return null;
             }
+
+            if (sensor.getZona() != null && zona.getId() != null && !zona.getId().equals(sensor.getZona().getId())) {
+                log.warn("Sensor pertenece a otra zona. codigo='{}' zonaTopic='{}' zonaSensor='{}'",
+                        sensorCodigo, zona.getNombre(), sensor.getZona().getNombre());
+            }
+            // Preferir la zona del sensor (fuente de verdad) si está definida
+            if (sensor.getZona() != null) {
+                zona = sensor.getZona();
+            }
+            sensor.setUltimoReporte(LocalDateTime.now());
+            sensorRepository.save(sensor);
 
             Evento evento = new Evento();
             evento.setZona(zona);
@@ -112,8 +150,8 @@ public class MqttDataService {
                     "Evento persistido: id={} zona='{}' sensor='{}' tipoSensor='{}' tipoEvento='{}' fechaHora={}",
                     guardado.getId(),
                     zona.getNombre(),
-                    sensor.getCodigo(),
-                    sensor.getTipoSensor(),
+                    sensor != null ? sensor.getCodigo() : sensorCodigo,
+                    sensor != null ? sensor.getTipoSensor() : tipoSensor,
                     guardado.getTipoEvento(),
                     guardado.getFechaHora()
             );
@@ -248,7 +286,6 @@ public class MqttDataService {
         return new SseEventoDTO(
                 evento.getId(),
                 evento.getTipoEvento(),
-                "INFO",
                 evento.getFechaHora(),
                 evento.getZona() != null ? evento.getZona().getId() : null,
                 evento.getSensor() != null ? evento.getSensor().getId() : null,
@@ -259,7 +296,6 @@ public class MqttDataService {
     public record SseEventoDTO(
             Long id,
             String tipoEvento,
-            String severidad,
             LocalDateTime fechaHora,
             Long zonaId,
             Long sensorId,

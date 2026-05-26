@@ -35,6 +35,11 @@ export const UserCard = ({ user }: UserCardProps) => {
   }
 
   const handleChangeUserStatus = async (newStatus: boolean) => {
+    if (!token) {
+      toast.error("No autorizado: token no disponible")
+      return
+    }
+
     try {
       setIsLoading(true)
 

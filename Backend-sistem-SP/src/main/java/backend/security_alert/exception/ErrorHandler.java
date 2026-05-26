@@ -88,6 +88,7 @@ public class ErrorHandler {
                         errors),
                 HttpStatus.FORBIDDEN);
     }
+    @ExceptionHandler(BadRequestCustomException.class)
     public ResponseEntity<Response<Object>> handleBadRequestCustomException(
             BadRequestCustomException ex) {
         List<String> errors = Collections.singletonList(ex.getMessage());

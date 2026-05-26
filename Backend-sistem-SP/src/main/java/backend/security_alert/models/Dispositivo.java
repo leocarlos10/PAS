@@ -31,6 +31,12 @@ public class Dispositivo {
     private String topicComando;
     private String estadoConexion;
 
+    @Column(name = "wifi_ssid")
+    private String wifiSsid;
+
+    @Column(name = "wifi_password")
+    private String wifiPassword;
+
     private LocalDateTime ultimaConexion;
 
     @OneToMany(mappedBy = "dispositivo")

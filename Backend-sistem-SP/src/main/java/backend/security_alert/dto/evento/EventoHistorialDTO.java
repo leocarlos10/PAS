@@ -17,5 +17,4 @@ public class EventoHistorialDTO {
     private String sensorNombre;
     private String tipoEvento;
     private String descripcion;
-    private String severidad;
 }

@@ -31,6 +31,5 @@ public class Evento {
 
     private String tipoEvento;
     private String descripcion;
-    private String severidad;
     private LocalDateTime fechaHora;
 }

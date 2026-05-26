@@ -1,4 +1,4 @@
-import { useState, type SubmitEvent } from "react";
+import { useState, useEffect, type SubmitEvent } from "react";
 import type { ProgramacionHoraria, DiaSemana } from "@/types";
 import { Dialog } from "@/components/ui/dialog";
 
@@ -27,11 +27,20 @@ export const ProgramacionModal = ({
   onSave,
   isLoading = false,
 }: ProgramacionModalProps) => {
-  const [horaArmado, setHoraArmado] = useState(programacionActual?.horaInicio || "08:00");
-  const [horaDesarmado, setHoraDesarmado] = useState(programacionActual?.horaFin || "18:00");
-  const [diasSeleccionados, setDiasSeleccionados] = useState<DiaSemana[]>(
-    programacionActual?.diasSemana || ["lunes", "martes", "miercoles", "jueves", "viernes"]
-  );
+  const [horaArmado, setHoraArmado] = useState("08:00");
+  const [horaDesarmado, setHoraDesarmado] = useState("18:00");
+  const [diasSeleccionados, setDiasSeleccionados] = useState<DiaSemana[]>([
+    "lunes", "martes", "miercoles", "jueves", "viernes",
+  ]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setHoraArmado(programacionActual?.horaInicio || "08:00");
+    setHoraDesarmado(programacionActual?.horaFin || "18:00");
+    setDiasSeleccionados(
+      programacionActual?.diasSemana || ["lunes", "martes", "miercoles", "jueves", "viernes"]
+    );
+  }, [isOpen, programacionActual]);
 
   const handleDiaToggle = (dia: DiaSemana) => {
     if (diasSeleccionados.includes(dia)) {
@@ -62,18 +71,23 @@ export const ProgramacionModal = ({
     }
   };
 
+  const esEdicion = Boolean(programacionActual?.id);
+
   return (
     <Dialog isOpen={isOpen} onClose={onClose}>
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Título */}
         <div>
-          <h2 className="text-xl font-semibold">Programar Horario</h2>
+          <h2 className="text-xl font-semibold">
+            {esEdicion ? "Editar horario" : "Agregar horario"}
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Este horario se repetirá cada semana en los días seleccionados.
+          </p>
         </div>
 
-        {/* Días Activos */}
         <div>
           <label className="block text-sm font-semibold mb-4 text-muted-foreground uppercase tracking-wider">
-            Días Activos
+            Días activos
           </label>
           <div className="flex justify-center gap-3 flex-wrap">
             {diasSemanaOpciones.map((dia) => (
@@ -95,11 +109,10 @@ export const ProgramacionModal = ({
           </div>
         </div>
 
-        {/* Horas */}
         <div className="grid grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">
-              Hora Armado
+              Hora armado
             </label>
             <input
               type="time"
@@ -111,7 +124,7 @@ export const ProgramacionModal = ({
           </div>
           <div>
             <label className="block text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">
-              Hora Desarmado
+              Hora desarmado
             </label>
             <input
               type="time"
@@ -123,7 +136,6 @@ export const ProgramacionModal = ({
           </div>
         </div>
 
-        {/* Botones de acción */}
         <div className="flex gap-3 pt-4">
           <button
             type="button"
@@ -138,7 +150,7 @@ export const ProgramacionModal = ({
             disabled={isLoading || diasSeleccionados.length === 0}
             className="flex-1 rounded-lg bg-cyan-500 px-4 py-2 font-medium text-white transition-colors hover:bg-cyan-600 disabled:opacity-50"
           >
-            {isLoading ? "Guardando..." : "Guardar"}
+            {isLoading ? "Guardando..." : esEdicion ? "Actualizar" : "Agregar"}
           </button>
         </div>
       </form>

@@ -1,27 +1,32 @@
 import { AdminHeader } from "@/components/admin/Layout/AdminHeader"
 import { ZonaCard, ZonaCardSkeleton } from "@/components/admin/Zona"
+import { useAuthContext } from "@/context/auth.context"
 import { useZonas } from "@/hooks/useZonas"
 import { useSseEventos } from "@/hooks/useSse"
 import type { ZonaResponse } from "@/types"
 import { useCallback, useEffect, useState } from "react"
 
 export const ZonasPage = () => {
+  const { token } = useAuthContext()
   const { GetAllZonas, loading } = useZonas()
   const { eventos, connected } = useSseEventos()
   const [zonas, setZonas] = useState<ZonaResponse[]>([])
 
   const fetchZonas = useCallback(async () => {
+    if (!token) return
+
     const response = await GetAllZonas()
     if (response?.responseCode === 200 && response.data) {
       setZonas(response.data)
-    } else {
+    } else if (response?.responseCode !== 401) {
       console.error(response?.responseMessage || "Error al obtener zonas")
     }
-  }, [GetAllZonas])
+  }, [GetAllZonas, token])
 
   useEffect(() => {
+    if (!token) return
     fetchZonas()
-  }, [fetchZonas])
+  }, [token, fetchZonas])
 
   const handleZonaUpdated = (updatedZona: ZonaResponse) => {
     setZonas((prev) =>
@@ -36,6 +41,7 @@ export const ZonasPage = () => {
         description="Monitoreo y control detallado por area."
         showLive={true}
         connected={connected}
+        showWifiButton={true}
       />
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         {loading && Array.from({ length: 2 }).map((_, index) => (

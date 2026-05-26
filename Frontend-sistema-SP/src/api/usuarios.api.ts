@@ -34,9 +34,9 @@ export async function GetAllUsersApi(token: string): Promise<Response<AdminUserR
     return response;
 }
 
-export async function UpdateUserApi(userId: number, updateData: Partial<UpdateUserRequest>, token: string): Promise<Response<Partial<UpdateUserRequest>>> {
+export async function UpdateUserApi(userId: number, updateData: Partial<UpdateUserRequest>, token: string): Promise<Response<AdminUserResponse>> {
 
-    const response = await ApiRequest<UpdateUserRequest, Partial<UpdateUserRequest>>(`${API_URL}/admin/users/${userId}`, {
+    const response = await ApiRequest<AdminUserResponse, Partial<UpdateUserRequest>>(`${API_URL}/admin/users/${userId}`, {
         method: 'PATCH',
         headers: getHeaders(token),
         body: updateData

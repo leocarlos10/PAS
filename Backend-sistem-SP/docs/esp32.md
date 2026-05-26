@@ -16,4 +16,17 @@ jardin/zona1/comando {"accion":"DESARMAR"}
 jardin/zona2/comando {"accion":"DESARMAR"}
 jardin/zona2/comando {"accion":"ARMAR"}
 ```
+
+### Configuración Wi-Fi
+La ESP32 debe estar suscrita a:
+`jardin/{zona}/config`
+
+Recibirá un JSON con la acción `set_wifi`:
+```json
+{"action": "set_wifi", "ssid": "...", "password": "..."}
+```
+
+Para activar la sincronización automática al inicio, la ESP32 debe publicar su estado:
+`jardin/{zona}/estado` -> `{"estado": "online"}`
+
 Y activar o desactivar. las zona de la alarma. 

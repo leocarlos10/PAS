@@ -1,6 +1,11 @@
-import { ToggleZonaActivaApi, UpdateProgramacionHorariaApi } from "@/api/zonas.api"
+import {
+  ToggleZonaActivaApi,
+  CreateProgramacionApi,
+  UpdateProgramacionApi,
+  DeleteProgramacionApi,
+} from "@/api/zonas.api"
 import { useAuthContext } from "@/context/auth.context"
-import type { ZonaResponse, ProgramacionHoraria, ProgramacionHorariaRequest } from "@/types"
+import type { ZonaResponse, ProgramacionHoraria, ProgramacionHorariaRequest, DiaSemana } from "@/types"
 import { getErrorToastType, handleApiError } from "@/utils/apiErrorHandler"
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
@@ -38,17 +43,35 @@ const formatUltimoReporte = (fecha?: string) => {
   })
 }
 
+const formatDiasSemana = (dias: DiaSemana[]) => {
+  if (dias.includes("todos")) return "TODOS LOS DÍAS"
+  const entreSemana = ["lunes", "martes", "miercoles", "jueves", "viernes"] as const
+  const finDeSemana = ["sabado", "domingo"] as const
+  const tieneEntreSemana = entreSemana.every((d) => dias.includes(d))
+  const tieneFinDeSemana = finDeSemana.every((d) => dias.includes(d))
+  const soloEntreSemana = tieneEntreSemana && !dias.some((d) => (finDeSemana as any).includes(d))
+  const soloFinDeSemana = tieneFinDeSemana && !dias.some((d) => (entreSemana as any).includes(d))
+
+  if (soloEntreSemana) return "LUNES A VIERNES"
+  if (soloFinDeSemana) return "SÁBADO Y DOMINGO"
+  if (dias.length === 7) return "TODOS LOS DÍAS"
+  return dias.map((d) => d.toUpperCase()).join(", ")
+}
+
 export const ZonaCard = ({ zona, index, onZonaUpdated, sseEventos = [], sseConnected = false }: ZonaCardProps) => {
+  
   const { token } = useAuthContext()
   const [currentZona, setCurrentZona] = useState(zona)
+  const [programaciones, setProgramaciones] = useState<ProgramacionHoraria[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [programacion, setProgramacion] = useState<ProgramacionHoraria | undefined>(undefined)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingProgramacion, setEditingProgramacion] = useState<ProgramacionHoraria | undefined>(undefined)
   const [isProgramacionLoading, setIsProgramacionLoading] = useState(false)
   const [eventoActual, setEventoActual] = useState<SseEvento | null>(null)
 
   useEffect(() => {
     setCurrentZona(zona)
+    setProgramaciones(zona.programaciones ?? [])
   }, [zona])
 
   // Filtrar evento más reciente para esta zona
@@ -63,6 +86,17 @@ export const ZonaCard = ({ zona, index, onZonaUpdated, sseEventos = [], sseConne
 
   const isArmada = currentZona.activa
   const icon = zoneIcons[index % zoneIcons.length]
+
+  const actualizarZonaLocal = (nuevasProgramaciones: ProgramacionHoraria[]) => {
+    const updated: ZonaResponse = {
+      ...currentZona,
+      modoControl: nuevasProgramaciones.some((p) => p.activa) ? "AUTOMATICO" : "MANUAL",
+      programaciones: nuevasProgramaciones,
+    }
+    setProgramaciones(nuevasProgramaciones)
+    setCurrentZona(updated)
+    onZonaUpdated(updated)
+  }
 
   const handleToggle = async () => {
     if (!token) {
@@ -79,7 +113,11 @@ export const ZonaCard = ({ zona, index, onZonaUpdated, sseEventos = [], sseConne
       if (result.success && response.data) {
         setCurrentZona(response.data)
         onZonaUpdated(response.data)
-        toast.success(newActiva ? "Zona armada correctamente" : "Zona desarmada correctamente")
+        if (response.data.advertencia) {
+          toast.warning(response.data.advertencia)
+        } else {
+          toast.success(newActiva ? "Zona armada correctamente" : "Zona desarmada correctamente")
+        }
       } else {
         const toastType = getErrorToastType(result.statusCode)
         toast[toastType](result.message)
@@ -92,7 +130,17 @@ export const ZonaCard = ({ zona, index, onZonaUpdated, sseEventos = [], sseConne
     }
   }
 
-  const handleSaveProgramacion = async (nuevaProgramacion: ProgramacionHorariaRequest) => {
+  const handleOpenCreate = () => {
+    setEditingProgramacion(undefined)
+    setIsModalOpen(true)
+  }
+
+  const handleOpenEdit = (programacion: ProgramacionHoraria) => {
+    setEditingProgramacion(programacion)
+    setIsModalOpen(true)
+  }
+
+  const handleSaveProgramacion = async (data: ProgramacionHorariaRequest) => {
     if (!token) {
       toast.error("No autorizado: token no disponible")
       return
@@ -100,20 +148,64 @@ export const ZonaCard = ({ zona, index, onZonaUpdated, sseEventos = [], sseConne
 
     try {
       setIsProgramacionLoading(true)
-      const response = await UpdateProgramacionHorariaApi(currentZona.id, nuevaProgramacion, token)
-      const result = handleApiError(response)
 
-      if (result.success && response.data) {
-        setProgramacion(response.data)
-        toast.success("Programación de horarios actualizada correctamente")
+      if (editingProgramacion?.id) {
+        const response = await UpdateProgramacionApi(currentZona.id, editingProgramacion.id, data, token)
+        const result = handleApiError(response)
+        if (result.success && response.data) {
+          const actualizadas = programaciones.map((p) =>
+            p.id === editingProgramacion.id ? response.data! : p
+          )
+          actualizarZonaLocal(actualizadas)
+          toast.success("Horario actualizado correctamente")
+        } else {
+          const toastType = getErrorToastType(result.statusCode)
+          toast[toastType](result.message || "Error al actualizar el horario")
+        }
       } else {
-        const toastType = getErrorToastType(result.statusCode)
-        toast[toastType](result.message || "Error al guardar la programación")
+        const response = await CreateProgramacionApi(currentZona.id, data, token)
+        const result = handleApiError(response)
+        if (result.success && response.data) {
+          actualizarZonaLocal([...programaciones, response.data])
+          toast.success("Horario agregado correctamente")
+        } else {
+          const toastType = getErrorToastType(result.statusCode)
+          toast[toastType](result.message || "Error al agregar el horario")
+        }
       }
     } catch (error) {
       console.error("Error al guardar programación:", error)
       toast.error("Error al guardar la programación")
       throw error
+    } finally {
+      setIsProgramacionLoading(false)
+    }
+  }
+
+  const handleDeleteProgramacion = async (programacionId: number) => {
+    if (!token) {
+      toast.error("No autorizado: token no disponible")
+      return
+    }
+
+    if (!confirm("¿Eliminar este horario?")) return
+
+    try {
+      setIsProgramacionLoading(true)
+      const response = await DeleteProgramacionApi(currentZona.id, programacionId, token)
+      const result = handleApiError(response)
+
+      if (result.success) {
+        const filtradas = programaciones.filter((p) => p.id !== programacionId)
+        actualizarZonaLocal(filtradas)
+        toast.success("Horario eliminado correctamente")
+      } else {
+        const toastType = getErrorToastType(result.statusCode)
+        toast[toastType](result.message || "Error al eliminar el horario")
+      }
+    } catch (error) {
+      console.error("Error al eliminar programación:", error)
+      toast.error("Error al eliminar la programación")
     } finally {
       setIsProgramacionLoading(false)
     }
@@ -275,54 +367,74 @@ export const ZonaCard = ({ zona, index, onZonaUpdated, sseEventos = [], sseConne
         </div>
       </div>
 
-      {/* Sección de Programación de Horarios */}
       <div className="mt-6 rounded-lg border border-border bg-background/40 p-4">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-4 mb-4">
           <div className="flex items-center gap-3">
             <span className="material-symbols-outlined text-[20px] text-muted-foreground">schedule</span>
             <div>
-              {programacion ? (
-                <div>
-                  <p className="text-sm font-medium">
-                    Activación automática: <span className="font-semibold">{programacion.horaInicio}</span> — <span className="font-semibold">{programacion.horaFin}</span>
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {programacion.diasSemana.includes("lunes") && 
-                    programacion.diasSemana.includes("martes") && 
-                    programacion.diasSemana.includes("miercoles") && 
-                    programacion.diasSemana.includes("jueves") && 
-                    programacion.diasSemana.includes("viernes") &&
-                    !programacion.diasSemana.includes("sabado") &&
-                    !programacion.diasSemana.includes("domingo")
-                      ? "LUNES A VIERNES"
-                      : programacion.diasSemana.length === 7
-                      ? "TODOS LOS DÍAS"
-                      : programacion.diasSemana.map((d) => d.toUpperCase()).join(", ")}
-                  </p>
-                </div>
-              ) : (
-                <div>
-                  <p className="text-sm font-medium">Activación automática</p>
-                  <p className="text-xs text-muted-foreground mt-1">Sin programación configurada</p>
-                </div>
-              )}
+              <p className="text-sm font-medium">Activación automática</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Horarios recurrentes cada semana
+              </p>
             </div>
           </div>
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={handleOpenCreate}
             disabled={isProgramacionLoading}
             className="flex items-center gap-2 rounded-lg border border-cyan-500/50 bg-cyan-500/10 px-3 py-2 text-sm font-medium text-cyan-500 transition-colors hover:bg-cyan-500/20 disabled:opacity-50 cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[18px]">edit</span>
-            {programacion ? "Editar horario" : "Configurar"}
+            <span className="material-symbols-outlined text-[18px]">add</span>
+            Agregar horario
           </button>
         </div>
+
+        {programaciones.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-4">
+            Sin horarios configurados
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {programaciones.map((prog) => (
+              <div
+                key={prog.id}
+                className="flex items-center justify-between gap-3 rounded-md border border-border/60 bg-card p-3"
+              >
+                <div>
+                  <p className="text-sm font-medium">
+                    <span className="font-semibold">{prog.horaInicio}</span>
+                    {" — "}
+                    <span className="font-semibold">{prog.horaFin}</span>
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {formatDiasSemana(prog.diasSemana)}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleOpenEdit(prog)}
+                    disabled={isProgramacionLoading}
+                    className="rounded-lg border border-border px-2 py-1.5 text-xs font-medium transition-colors hover:bg-muted disabled:opacity-50 cursor-pointer"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => prog.id && handleDeleteProgramacion(prog.id)}
+                    disabled={isProgramacionLoading}
+                    className="rounded-lg border border-danger/50 px-2 py-1.5 text-xs font-medium text-danger transition-colors hover:bg-danger/10 disabled:opacity-50 cursor-pointer"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <ProgramacionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        programacionActual={programacion}
+        programacionActual={editingProgramacion}
         onSave={handleSaveProgramacion}
         isLoading={isProgramacionLoading}
       />
