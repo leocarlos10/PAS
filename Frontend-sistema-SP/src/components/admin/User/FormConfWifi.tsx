@@ -2,6 +2,7 @@ import type { SubmitEvent } from "react"
 import { toast } from "sonner"
 import { useAuthContext } from "@/context/auth.context"
 import { ConfigurarWifiBatch, GetDispositivos } from "@/api/dispositivos.api"
+import type { ConfigurarWifiResponse } from "@/types"
 import { useEffect, useState } from "react"
 
 type FormConfWifiProps = {
@@ -70,12 +71,13 @@ export const FormConfWifi = ({ onClose, dispositivoIds }: FormConfWifiProps) => 
 
     try {
       const response = await ConfigurarWifiBatch(resolvedIds, wifiName, wifiPassword, token ?? undefined)
-      if (response && response.responseCode === 200) {
-        toast.success("Configuración Wi-Fi enviada correctamente")
-        e.currentTarget.reset()
+      const wifiResponse = response as unknown as ConfigurarWifiResponse
+      
+      if (wifiResponse && wifiResponse.message) {
+        toast.success(wifiResponse.message)
         onClose?.()
       } else {
-        toast.error(response?.responseMessage || "Error al enviar configuración Wi-Fi")
+        toast.error("Error al enviar configuración Wi-Fi")
       }
     } catch (error) {
       console.error("Error al guardar configuración Wi-Fi:", error)
