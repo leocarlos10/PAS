@@ -85,7 +85,7 @@ public class UserService {
     ) {
         User user = userRepository.findByUsername(request.getUsername())
             .orElseThrow(() ->
-                new NotFoundException("User not found. Please register first")
+                new NotFoundException("User not found. Please contact an administrator")
             );
 
         if (!Boolean.TRUE.equals(user.getActive())) {

@@ -266,7 +266,7 @@ export const ZonaCard = ({ zona, index, onZonaUpdated, sseEventos = [] }: ZonaCa
             {(currentZona.sensores ?? []).length === 0 && (
               <p className="text-sm text-muted-foreground">Sin sensores registrados</p>
             )}
-            {(currentZona.sensores ?? []).map((sensor) => {
+            {(currentZona.sensores ?? []).sort((a, b) => a.id - b.id).map((sensor) => {
               const eventoSensor = eventoActual?.sensorId === sensor.id
               
               return (
@@ -324,33 +324,22 @@ export const ZonaCard = ({ zona, index, onZonaUpdated, sseEventos = [] }: ZonaCa
                 <span className="font-semibold text-warning">Evento en vivo</span>
               </div>
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
+                <div className="flex flex-col gap-1">
                   <span className="text-muted-foreground">Tipo:</span>
                   <span className="font-medium text-warning">{eventoActual.tipoEvento}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex flex-col gap-1">
                   <span className="text-muted-foreground">Sensor ID:</span>
-                  <span className="font-medium">
+                  <span className="font-medium break-words">
                     {currentZona.sensores?.find(s => s.id === eventoActual.sensorId)?.codigo || `#${eventoActual.sensorId}`}
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Severidad:</span>
-                  <span className="font-medium">{eventoActual.severidad}</span>
-                </div>
-                <div className="flex justify-between">
+                <div className="flex flex-col gap-1">
                   <span className="text-muted-foreground">Hora:</span>
                   <span className="font-medium text-xs">
                     {new Date(eventoActual.fechaHora).toLocaleTimeString('es-CO')}
                   </span>
                 </div>
-                {eventoActual.payload && (
-                  <div className="rounded bg-black/20 p-2 mt-2">
-                    <p className="text-xs text-muted-foreground break-all max-h-16 overflow-y-auto">
-                      {eventoActual.payload}
-                    </p>
-                  </div>
-                )}
               </div>
             </div>
           ) : (
