@@ -33,6 +33,8 @@ services:
       - 8.8.8.8
       - 8.8.4.4
     environment:
+      TZ: America/Bogota
+      JAVA_TOOL_OPTIONS: -Duser.timezone=America/Bogota
       MQTT_ENABLED: ${MQTT_ENABLED:-true}
       MQTT_BROKER_URL: ${MQTT_BROKER_URL:-}
       MQTT_CLIENT_ID: ${MQTT_CLIENT_ID:-}
