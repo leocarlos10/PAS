@@ -20,6 +20,8 @@ import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 import java.util.Locale;
 import java.util.Optional;
+import backend.security_alert.repository.DispositivoRepository;
+import backend.security_alert.models.Dispositivo;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +33,7 @@ public class MqttDataService {
     private final SensorRepository sensorRepository;
     private final EventoRepository eventoRepository;
     private final SseManager sseManager;
+    private final DispositivoRepository dispositivoRepository;
 
     @Transactional
     public void procesarMensaje(String topic, String payload) {
@@ -61,11 +64,34 @@ public class MqttDataService {
             // Importante: NO re-enviar automáticamente la última config WiFi al recibir "online/start".
             // Eso puede generar bucles (reconfiguración -> reinicio -> online -> reconfiguración...).
             if ("online".equalsIgnoreCase(estado) || "start".equalsIgnoreCase(estado) || "conectado".equalsIgnoreCase(estado)) {
+                // Extraer la zona del topic (ej: jardin/zona1/estado -> zona1)
+                String zonaKey = extraerZonaDelTopic(topic);
+                if (zonaKey != null) {
+                    Zona zona = resolverZona(zonaKey);
+                    if (zona != null && zona.getDispositivo() != null) {
+                        Dispositivo dispositivo = zona.getDispositivo();
+                        dispositivo.setEstadoConexion("CONECTADO");
+                        dispositivo.setUltimaConexion(LocalDateTime.now());
+                        dispositivoRepository.save(dispositivo);
+                        log.info("Dispositivo actualizado como CONECTADO. dispositivo='{}' zonaKey='{}' topic={}", 
+                                dispositivo.getNombre(), zonaKey, topic);
+                    }
+                }
                 log.info("Estado de dispositivo recibido ({}). No se re-envía WiFi automáticamente. topic={}", estado, topic);
             }
         } catch (Exception e) {
             log.error("Error procesando estado de dispositivo: {}", topic, e);
         }
+    }
+
+    private String extraerZonaDelTopic(String topic) {
+        // Extrae la zona de un topic como "jardin/zona1/estado" -> "zona1"
+        if (topic == null) return null;
+        String[] parts = topic.split("/");
+        if (parts.length >= 2 && "jardin".equals(parts[0])) {
+            return parts[1];
+        }
+        return null;
     }
 
     private Evento persistirEvento(String topic, String payload) {
