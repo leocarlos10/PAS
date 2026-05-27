@@ -6,7 +6,6 @@ import backend.security_alert.models.Zona;
 import backend.security_alert.repository.EventoRepository;
 import backend.security_alert.repository.SensorRepository;
 import backend.security_alert.repository.ZonaRepository;
-import backend.security_alert.service.DispositivoService;
 import backend.security_alert.sse.SseManager;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,7 +31,6 @@ public class MqttDataService {
     private final SensorRepository sensorRepository;
     private final EventoRepository eventoRepository;
     private final SseManager sseManager;
-    private final DispositivoService dispositivoService;
 
     @Transactional
     public void procesarMensaje(String topic, String payload) {
@@ -59,20 +57,11 @@ public class MqttDataService {
         try {
             JsonNode json = safeReadTree(payload);
             String estado = textOrNull(json, "estado");
-            
-            // Si el dispositivo dice que está "online" o similar, le enviamos la última configuración WiFi
+
+            // Importante: NO re-enviar automáticamente la última config WiFi al recibir "online/start".
+            // Eso puede generar bucles (reconfiguración -> reinicio -> online -> reconfiguración...).
             if ("online".equalsIgnoreCase(estado) || "start".equalsIgnoreCase(estado) || "conectado".equalsIgnoreCase(estado)) {
-                TopicData td = parseTopic(topic).orElse(null);
-                if (td != null && td.zonaKey() != null) {
-                    Zona zona = resolverZona(td.zonaKey());
-                    if (zona != null && zona.getDispositivo() != null) {
-                        backend.security_alert.models.Dispositivo d = zona.getDispositivo();
-                        if (d.getWifiSsid() != null && !d.getWifiSsid().isBlank()) {
-                            log.info("Dispositivo {} online. Re-enviando configuración WiFi guardada.", d.getNombre());
-                            dispositivoService.enviarConfigWifi(d.getId(), d.getWifiSsid(), d.getWifiPassword());
-                        }
-                    }
-                }
+                log.info("Estado de dispositivo recibido ({}). No se re-envía WiFi automáticamente. topic={}", estado, topic);
             }
         } catch (Exception e) {
             log.error("Error procesando estado de dispositivo: {}", topic, e);
