@@ -113,11 +113,7 @@ export const ZonaCard = ({ zona, index, onZonaUpdated, sseEventos = [] }: ZonaCa
       if (result.success && response.data) {
         setCurrentZona(response.data)
         onZonaUpdated(response.data)
-        if (response.data.advertencia) {
-          toast.warning(response.data.advertencia)
-        } else {
-          toast.success(newActiva ? "Zona armada correctamente" : "Zona desarmada correctamente")
-        }
+        toast.success(newActiva ? "Zona armada correctamente" : "Zona desarmada correctamente")
       } else {
         const toastType = getErrorToastType(result.statusCode)
         toast[toastType](result.message)
