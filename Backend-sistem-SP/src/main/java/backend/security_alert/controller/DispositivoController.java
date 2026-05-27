@@ -36,7 +36,7 @@ public class DispositivoController {
         dispositivoService.enviarConfigWifi(id, request.ssid(), request.password());
 
         return ResponseEntity.ok(Map.of(
-                "mensaje", "Configuración enviada. El dispositivo se reconectará en breve.",
+                "message", "Configuración enviada. El dispositivo se reconectará en breve.",
                 "dispositivoId", id
         ));
     }
@@ -48,7 +48,7 @@ public class DispositivoController {
         int sent = dispositivoService.enviarConfigWifiMultiple(request.dispositivoIds(), request.ssid(), request.password());
 
         return ResponseEntity.ok(Map.of(
-            "mensaje", "Configuración enviada.",
+            "message", "Configuración enviada.",
             "enviados", sent
         ));
         }
