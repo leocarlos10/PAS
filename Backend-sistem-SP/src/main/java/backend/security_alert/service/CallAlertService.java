@@ -63,6 +63,9 @@ public class CallAlertService {
     private final Set<Long> zonasConEventoActivo =
             Collections.synchronizedSet(new HashSet<>());
 
+    // ─── NUEVO: Cola real de eventos pendientes ───────────────────────────────
+    private final Queue<Evento> colaEventosPendientes = new LinkedList<>();
+
     // ─── MECANISMO 3: Cola de admins - para reintentos con múltiples admins ────
     // Contiene la lista de admins a intentar, en orden
     private Queue<User> colaAdmins = new LinkedList<>();
@@ -70,9 +73,8 @@ public class CallAlertService {
     /**
      * Procesa un evento de alerta.
      * 1. Guarda siempre el evento en BD
-     * 2. Detecta duplicados por zona
-     * 3. Controla que solo haya 1 llamada activa
-     * 4. Carga cola de admins para reintentos
+     * 2. Detecta duplicados por zona (si ya hay una llamada o espera para esa zona)
+     * 3. Gestiona la cola de llamadas
      */
     public synchronized void procesarEvento(Evento evento) {
         Long zonaId = evento.getZona().getId();
@@ -80,43 +82,52 @@ public class CallAlertService {
 
         System.out.println("📨 Evento recibido - Zona: " + zonaId + " | Evento ID: " + eventoId);
 
-        // 1. SIEMPRE guardar en BD (aunque sea duplicado)
+        // 1. SIEMPRE guardar en BD
         Alerta alerta = construirAlerta(evento);
         alertaRepository.save(alerta);
         System.out.println("✅ Alerta guardada en BD - ID: " + alerta.getId());
 
-        // 2. Verificar si esta zona ya tiene evento activo (DEDUPLICACIÓN)
+        // 2. DEDUPLICACIÓN: Si esta zona ya está siendo procesada o espera en cola, ignorar duplicado
         if (zonasConEventoActivo.contains(zonaId)) {
-            System.out.println("⚠️  DUPLICADO - Zona " + zonaId +
-                    " ya tiene evento activo. Ignorando " + eventoId);
-            System.out.println("   Zonas activas: " + zonasConEventoActivo);
+            System.out.println("⚠️  DUPLICADO - Zona " + zonaId + " ya está en el flujo de llamadas. Ignorando.");
             return;
         }
 
-        // 3. Registrar zona como activa
+        // 3. Registrar zona y añadir a la cola
         zonasConEventoActivo.add(zonaId);
-        System.out.println("📍 Zona " + zonaId + " registrada como activa");
+        colaEventosPendientes.add(evento);
+        System.out.println("📋 Evento añadido a la cola. Pendientes: " + colaEventosPendientes.size());
 
-        // 4. Si ya hay llamada activa → solo dejar registrado
-        if (llamadaActiva.get()) {
-            System.out.println("⏸️  Llamada ya en curso. Evento " + eventoId +
-                    " en cola. Se procesará al terminar la alerta actual.");
-            System.out.println("   Zonas activas esperando: " + zonasConEventoActivo);
+        // 4. Si no hay llamada activa, procesar inmediatamente
+        if (!llamadaActiva.get()) {
+            procesarSiguienteEnCola();
+        } else {
+            System.out.println("⏸️  Llamada en curso. El evento esperará su turno.");
+        }
+    }
+
+    /**
+     * Toma el siguiente evento de la cola y arranca el flujo de llamada.
+     */
+    private synchronized void procesarSiguienteEnCola() {
+        if (colaEventosPendientes.isEmpty()) {
+            System.out.println("🏁 No hay más eventos pendientes en la cola.");
+            liberarBloqueo();
             return;
         }
 
-        // 5. Sin llamada activa → iniciar ahora
-        System.out.println("🎬 Iniciando flujo de llamada para Zona " + zonaId);
-        eventoActual = evento;
-        intentos.set(0);
+        eventoActual = colaEventosPendientes.poll();
+        System.out.println("🎬 Iniciando flujo de llamada para: " + eventoActual.getZona().getNombre());
         
-        // 6. CARGAR COLA DE ADMINS
+        intentos.set(0);
         cargarColaAdmins();
         
         if (colaAdmins.isEmpty()) {
-            System.err.println("❌ No hay admins disponibles en el sistema");
-            alertaRepository.marcarFallida(evento.getId(), LocalDateTime.now());
-            liberarBloqueo();
+            System.err.println("❌ No hay admins disponibles para este evento");
+            alertaRepository.marcarFallida(eventoActual.getId(), LocalDateTime.now());
+            // Aunque falle, debemos liberar esta zona y seguir con la siguiente
+            zonasConEventoActivo.remove(eventoActual.getZona().getId());
+            procesarSiguienteEnCola();
             return;
         }
 
@@ -129,21 +140,20 @@ public class CallAlertService {
     private void hacerLlamada() {
         llamadaActiva.set(true);
         int intento = intentos.incrementAndGet();
-        Long zonaId = eventoActual.getZona().getId();
         String nombreZona = eventoActual.getZona().getNombre();
 
         // Obtener próximo admin en la cola
         if (colaAdmins.isEmpty()) {
-            System.err.println("❌ No hay más admins en la cola");
+            System.err.println("❌ No hay más admins en la cola para " + nombreZona);
             alertaRepository.marcarFallida(eventoActual.getId(), LocalDateTime.now());
-            procesarSiguienteZona();
+            terminarEventoActual();
             return;
         }
 
-        usuarioActual = colaAdmins.peek(); // Peek, no poll (queremos reintentar con este)
+        usuarioActual = colaAdmins.peek(); 
         String telefonoAdmin = usuarioActual.getPhone();
         
-        // Formatear teléfono: Asegurar que tenga el prefijo +57 y no esté duplicado
+        // Formatear teléfono
         String telefonoDestino = telefonoAdmin.trim();
         if (!telefonoDestino.startsWith("+")) {
             if (telefonoDestino.startsWith("57")) {
@@ -153,28 +163,23 @@ public class CallAlertService {
             }
         }
 
-        System.out.println("📞 Iniciando llamada - Intento " + intento + "/3");
-        System.out.println("   Admin: " + usuarioActual.getName() + " (" + telefonoDestino + ")");
-        System.out.println("   Zona: " + nombreZona);
-        System.out.println("   Admin ID: " + usuarioActual.getId());
+        System.out.println("📞 Llamando a " + usuarioActual.getName() + " (Intento " + intento + "/3) - Zona: " + nombreZona);
 
-        // Construir mensaje TwiML con instrucciones de voz
         String mensaje = String.format(
                 "<Response>" +
                 "<Say language='es-MX' voice='Polly.Lucia'>" +
                 "Alerta de seguridad. Se detectó actividad en la zona %s. " +
-                "Intento número %d de 3. Ingrese al sistema de inmediato." +
+                "Ingrese al sistema de inmediato." +
                 "</Say>" +
                 "<Pause length='1'/>" +
                 "<Say language='es-MX' voice='Polly.Lucia'>" +
-                "Repitiendo. Alerta de seguridad en zona %s." +
+                "Repitiendo. Alerta en zona %s." +
                 "</Say>" +
                 "</Response>",
-                nombreZona, intento, nombreZona
+                nombreZona, nombreZona
         );
 
         try {
-            // Hacer la llamada con Twilio
             Call call = Call.creator(
                     new PhoneNumber(telefonoDestino),
                     new PhoneNumber(twilioNumber),
@@ -184,144 +189,83 @@ public class CallAlertService {
             .setStatusCallbackEvent(java.util.List.of("completed"))
             .create();
 
-            System.out.println("✅ Llamada enviada - SID: " + call.getSid());
-
-            // Guardar SID en BD para trazabilidad
-            alertaRepository.updateSidYFechaNotificada(
-                    eventoActual.getId(),
-                    call.getSid(),
-                    LocalDateTime.now()
-            );
+            alertaRepository.updateSidYFechaNotificada(eventoActual.getId(), call.getSid(), LocalDateTime.now());
 
         } catch (Exception e) {
-            System.err.println("❌ Error al realizar la llamada: " + e.getMessage());
+            System.err.println("❌ Error Twilio: " + e.getMessage());
             manejarResultado("failed");
         }
     }
 
     /**
      * Maneja el resultado del callback de Twilio.
-     * Se invoca desde el webhook después de que la llamada termina.
-     * 
-     * Flujo:
-     * - Si completada: Marcar atendida y liberar
-     * - Si no-answer/busy: Reintentar con MISMO admin (hasta 3)
-     * - Si 3 intentos sin respuesta: Pasar al SIGUIENTE admin
-     * - Si no hay más admins: Marcar FALLIDA
      */
     public synchronized void manejarResultado(String callStatus) {
-        System.out.println("📬 Callback de Twilio: " + callStatus);
+        System.out.println("📬 Resultado llamada: " + callStatus);
 
         switch (callStatus) {
             case "completed" -> {
-                System.out.println("✅ Llamada contestada exitosamente por " + usuarioActual.getName());
+                System.out.println("✅ Contestada por " + usuarioActual.getName());
                 alertaRepository.marcarAtendida(eventoActual.getId(), LocalDateTime.now());
-                colaAdmins.clear(); // Limpiar cola ya que tuvo éxito
-                procesarSiguienteZona();
+                terminarEventoActual();
             }
             case "no-answer", "busy", "failed" -> {
                 if (intentos.get() < MAX_INTENTOS) {
-                    // Reintentar con MISMO admin
-                    System.out.println("🔁 Sin respuesta. Reintentando en 30s con " + 
-                            usuarioActual.getName() + "... (intento " + intentos.get() + "/" + MAX_INTENTOS + ")");
+                    System.out.println("🔁 Reintentando con " + usuarioActual.getName() + "...");
                     esperarYReintentar();
                 } else {
-                    // Ya intentamos 3 veces con este admin
-                    System.out.println("❌ Tras 3 intentos, " + usuarioActual.getName() + 
-                            " no contestó. Pasando al siguiente admin...");
-                    
-                    // Quitar admin actual de la cola
+                    System.out.println("❌ " + usuarioActual.getName() + " no contestó. Siguiente admin...");
                     colaAdmins.poll();
-                    
                     if (colaAdmins.isEmpty()) {
-                        // No hay más admins
-                        System.out.println("❌ No hay más admins disponibles. Marcando alerta como FALLIDA.");
                         alertaRepository.marcarFallida(eventoActual.getId(), LocalDateTime.now());
-                        procesarSiguienteZona();
+                        terminarEventoActual();
                     } else {
-                        // Hay más admins, reintentar con el siguiente
-                        System.out.println("📞 Intentando con el siguiente admin: " + colaAdmins.peek().getName());
-                        intentos.set(0); // Reset contador de intentos para el nuevo admin
+                        intentos.set(0);
                         hacerLlamada();
                     }
                 }
             }
             default -> {
-                System.out.println("⚠️  Estado desconocido: " + callStatus);
                 alertaRepository.marcarFallida(eventoActual.getId(), LocalDateTime.now());
-                procesarSiguienteZona();
+                terminarEventoActual();
             }
         }
     }
 
     /**
-     * Espera 30 segundos y reintenta la llamada.
+     * Finaliza el procesamiento del evento actual, libera la zona y pasa al siguiente.
      */
+    private void terminarEventoActual() {
+        if (eventoActual != null) {
+            Long zonaId = eventoActual.getZona().getId();
+            zonasConEventoActivo.remove(zonaId);
+            System.out.println("✨ Zona " + zonaId + " reseteada y lista para nuevos eventos.");
+        }
+        llamadaActiva.set(false);
+        procesarSiguienteEnCola();
+    }
+
     @Async
     protected void esperarYReintentar() {
         try {
-            System.out.println("⏰ Esperando 30 segundos antes del reintento...");
-            Thread.sleep(30_000); // 30 segundos
+            Thread.sleep(30_000);
             hacerLlamada();
         } catch (InterruptedException e) {
-            System.err.println("❌ Reintento interrumpido: " + e.getMessage());
             Thread.currentThread().interrupt();
             manejarResultado("failed");
         }
     }
 
-    /**
-     * Procesa la siguiente zona en la cola.
-     * Libera la zona actual y busca la siguiente con evento activo.
-     */
-    private void procesarSiguienteZona() {
-        Long zonaActualId = eventoActual.getZona().getId();
-
-        // Liberar zona actual
-        zonasConEventoActivo.remove(zonaActualId);
-        System.out.println("✨ Zona " + zonaActualId + " liberada");
-        System.out.println("   Zonas activas aún pendientes: " + zonasConEventoActivo);
-
-        liberarBloqueo();
-
-        // Si hay otras zonas esperando, procesar la siguiente
-        if (!zonasConEventoActivo.isEmpty()) {
-            System.out.println("📋 Procesando siguiente zona en cola...");
-            // Aquí en una implementación real se buscaría el siguiente evento
-            // Por ahora, el siguiente evento llegará vía MQTT y ejecutará procesarEvento()
-        }
-    }
-
-    /**
-     * Carga la cola de admins activos ordenados por ID.
-     * Si hay 2 admins, intenta primero el primero, luego el segundo.
-     */
     private void cargarColaAdmins() {
         colaAdmins.clear();
-        List<User> adminsActivos = userRepository.findAllAdminsActivos();
-        
-        if (adminsActivos.isEmpty()) {
-            System.err.println("❌ No hay admins activos en el sistema");
-            return;
-        }
-        
-        colaAdmins.addAll(adminsActivos);
-        System.out.println("📋 Cola de admins cargada (" + adminsActivos.size() + " disponibles):");
-        for (User admin : adminsActivos) {
-            System.out.println("   - " + admin.getName() + " (" + admin.getPhone() + ")");
-        }
+        colaAdmins.addAll(userRepository.findAllAdminsActivos());
     }
 
-    /**
-     * Libera el bloqueo global y limpia variables.
-     */
     private void liberarBloqueo() {
         llamadaActiva.set(false);
         eventoActual = null;
         usuarioActual = null;
         intentos.set(0);
-        colaAdmins.clear();
-        System.out.println("🔓 Bloqueo global liberado");
     }
 
     /**
