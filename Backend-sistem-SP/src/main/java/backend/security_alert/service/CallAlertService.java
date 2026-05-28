@@ -166,7 +166,7 @@ public class CallAlertService {
         try {
             // Hacer la llamada con Twilio
             Call call = Call.creator(
-                    new PhoneNumber("+57" + telefonoAdmin),
+                    new PhoneNumber(normalizarTelefono(telefonoAdmin)),
                     new PhoneNumber(twilioNumber),
                     new Twiml(mensaje)
             )
@@ -337,5 +337,38 @@ public class CallAlertService {
                 "  Zonas con evento activo: %s",
                 llamadaActiva.get(), intentos.get(), MAX_INTENTOS, zonasConEventoActivo
         );
+    }
+
+    /**
+     * Normaliza un número telefónico para Twilio.
+     * Maneja diferentes formatos:
+     * - "3001234567" → "+573001234567"
+     * - "+573001234567" → "+573001234567" (sin duplicar)
+     * - "+57 300 1234 567" → "+573001234567" (sin espacios)
+     * - "+47 300 1234 567" → "+573001234567" (cambia código de país)
+     */
+    private String normalizarTelefono(String phone) {
+        if (phone == null || phone.trim().isEmpty()) {
+            throw new IllegalArgumentException("Número telefónico no puede estar vacío");
+        }
+        
+        // Remover espacios, guiones, paréntesis
+        phone = phone.replaceAll("[\\s\\-\\(\\)]", "");
+        
+        // Si ya tiene +57 como código de país, devolverlo tal cual
+        if (phone.startsWith("+57")) {
+            return phone;
+        }
+        
+        // Si tiene otro +, removerlo y agregar +57
+        if (phone.startsWith("+")) {
+            phone = phone.substring(1);
+        }
+        
+        // Remover cualquier caracter no numérico
+        phone = phone.replaceAll("[^0-9]", "");
+        
+        // Agregar código de país
+        return "+57" + phone;
     }
 }
