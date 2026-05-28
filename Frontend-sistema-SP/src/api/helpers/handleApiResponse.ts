@@ -9,6 +9,16 @@ export const handleApiResponse = async <T = any>(
   request: globalThis.Response,
 ): Promise<Response<T>> => {
   try {
+    // Si es 204 No Content, no intentes parsear JSON
+    if (request.status === 204) {
+      return {
+        responseCode: 204,
+        responseMessage: "SUCCESS",
+        errorList: [],
+        data: undefined,
+      } as Response<T>;
+    }
+
     const response = (await request.json()) as Response<T>;
 
     if (!request.ok) {
