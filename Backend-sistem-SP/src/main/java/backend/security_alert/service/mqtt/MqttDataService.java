@@ -23,6 +23,8 @@ import java.util.Optional;
 import backend.security_alert.repository.DispositivoRepository;
 import backend.security_alert.models.Dispositivo;
 
+import backend.security_alert.service.CallAlertService;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -34,6 +36,7 @@ public class MqttDataService {
     private final EventoRepository eventoRepository;
     private final SseManager sseManager;
     private final DispositivoRepository dispositivoRepository;
+    private final CallAlertService callAlertService;
 
     @Transactional
     public void procesarMensaje(String topic, String payload) {
@@ -46,9 +49,24 @@ public class MqttDataService {
         Evento evento = persistirEvento(topic, payload);
         if (evento != null) {
             sseManager.enviarEvento("evento", eventoToSseData(evento, payload));
+            
+            // 3. Disparar llamada si es un evento crítico (solo si la zona está armada/activa)
+            if (esEventoCritico(evento)) {
+                log.info("🚀 Evento crítico detectado. Disparando llamada de alerta para zona: {}", evento.getZona().getNombre());
+                callAlertService.procesarEvento(evento);
+            }
         } else {
             sseManager.enviarEvento("raw", payload);
         }
+    }
+
+    private boolean esEventoCritico(Evento evento) {
+        String tipo = evento.getTipoEvento().toUpperCase();
+        // Eventos que disparan llamada
+        return tipo.contains("MOVIMIENTO") || 
+               tipo.contains("ABIERTO") || 
+               tipo.contains("ALERTA") ||
+               tipo.contains("INTRUSION");
     }
 
     private boolean esEstadoDispositivo(String topic, String payload) {

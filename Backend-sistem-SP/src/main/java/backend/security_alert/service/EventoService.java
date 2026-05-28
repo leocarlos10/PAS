@@ -8,8 +8,10 @@ import backend.security_alert.models.Zona;
 import backend.security_alert.repository.EventoRepository;
 import backend.security_alert.repository.SensorRepository;
 import backend.security_alert.repository.ZonaRepository;
+import backend.security_alert.service.CallAlertService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,11 +25,13 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EventoService {
 
     private final EventoRepository eventoRepository;
     private final ZonaRepository zonaRepository;
     private final SensorRepository sensorRepository;
+    private final CallAlertService callAlertService;
 
     @Transactional(readOnly = true)
     public Page<EventoHistorialDTO> obtenerHistorialPaginado(
@@ -90,7 +94,24 @@ public class EventoService {
         evento.setDescripcion(dto.getDescripcion());
         evento.setFechaHora(LocalDateTime.now());
 
-        return eventoRepository.save(evento);
+        Evento guardado = eventoRepository.save(evento);
+
+        // Disparar llamada si es crítico
+        if (esEventoCritico(guardado)) {
+            log.info("🚀 Evento crítico (API) detectado. Disparando llamada para zona: {}", zona.getNombre());
+            callAlertService.procesarEvento(guardado);
+        }
+
+        return guardado;
+    }
+
+    private boolean esEventoCritico(Evento evento) {
+        if (evento.getTipoEvento() == null) return false;
+        String tipo = evento.getTipoEvento().toUpperCase();
+        return tipo.contains("MOVIMIENTO") || 
+               tipo.contains("ABIERTO") || 
+               tipo.contains("ALERTA") ||
+               tipo.contains("INTRUSION");
     }
 
     private EventoHistorialDTO toHistorialDTO(Evento evento) {

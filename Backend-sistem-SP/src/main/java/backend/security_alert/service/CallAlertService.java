@@ -142,9 +142,19 @@ public class CallAlertService {
 
         usuarioActual = colaAdmins.peek(); // Peek, no poll (queremos reintentar con este)
         String telefonoAdmin = usuarioActual.getPhone();
+        
+        // Formatear teléfono: Asegurar que tenga el prefijo +57 y no esté duplicado
+        String telefonoDestino = telefonoAdmin.trim();
+        if (!telefonoDestino.startsWith("+")) {
+            if (telefonoDestino.startsWith("57")) {
+                telefonoDestino = "+" + telefonoDestino;
+            } else {
+                telefonoDestino = "+57" + telefonoDestino;
+            }
+        }
 
         System.out.println("📞 Iniciando llamada - Intento " + intento + "/3");
-        System.out.println("   Admin: " + usuarioActual.getName() + " (" + telefonoAdmin + ")");
+        System.out.println("   Admin: " + usuarioActual.getName() + " (" + telefonoDestino + ")");
         System.out.println("   Zona: " + nombreZona);
         System.out.println("   Admin ID: " + usuarioActual.getId());
 
@@ -166,7 +176,7 @@ public class CallAlertService {
         try {
             // Hacer la llamada con Twilio
             Call call = Call.creator(
-                    new PhoneNumber(normalizarTelefono(telefonoAdmin)),
+                    new PhoneNumber(telefonoDestino),
                     new PhoneNumber(twilioNumber),
                     new Twiml(mensaje)
             )
