@@ -53,3 +53,16 @@ mqtt:
   topic-filter: ${MQTT_TOPIC_FILTER:jardin/#}
   username: ${MQTT_USERNAME}
   password: ${MQTT_PASSWORD}
+
+twilio:
+  account:
+    sid: ${TWILIO_ACCOUNT_SID}
+  auth:
+    token: ${TWILIO_AUTH_TOKEN}
+  phone:
+    from: ${TWILIO_PHONE_FROM}
+
+app:
+  server:
+    url: ${APP_SERVER_URL}
+
